@@ -1,8 +1,9 @@
 import json
 from datetime import datetime, time, timedelta
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, Response
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from flask_migrate import Migrate
 
 # Get the base directory of the project
@@ -24,6 +25,37 @@ migrate = Migrate(app, db)
 
 
 # --- Define Database Model ---
+# --- Define UserProfile Model ---
+class UserProfile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    height = db.Column(db.Float, nullable=True) # in cm
+    age = db.Column(db.Integer, nullable=True)
+    gender = db.Column(db.String(50), nullable=True)
+
+    def __repr__(self):
+        return f'<UserProfile {self.id}>'
+
+# --- Define HealthRecord Model ---
+class HealthRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    weight = db.Column(db.Float, nullable=True) # in kg
+    body_fat = db.Column(db.Float, nullable=True) # as percentage
+    notes = db.Column(db.Text, nullable=True)
+
+    def __repr__(self):
+        return f'<HealthRecord {self.date}>'
+
+# --- Define HealthPlanItem Model ---
+class HealthPlanItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), nullable=False, default='pending') # 'pending' or 'completed'
+
+    def __repr__(self):
+        return f'<HealthPlanItem {self.title}>'
+
 class Workout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
@@ -373,9 +405,192 @@ def complete_event(event_id):
 
 #--------------------
 
+#-------‐------Health_section------------------# 
+
 @app.route('/health')
 def health():
-    return render_template('Health.html', active_page='health')
+    # --- 1. Fetch Core Data ---
+    profile = UserProfile.query.first() or UserProfile()
+    all_health_records = HealthRecord.query.order_by(HealthRecord.date.desc()).all()
+    health_plan_items = HealthPlanItem.query.order_by(HealthPlanItem.id).all()
+    latest_record = all_health_records[0] if all_health_records else None
+
+    # --- 2. Calculate Real-Time Stats ---
+    bmi = None
+    if profile.height and latest_record and latest_record.weight:
+        height_in_meters = profile.height / 100
+        bmi = round(latest_record.weight / (height_in_meters ** 2), 1)
+
+    # --- 3. Prepare Data for Weight Chart ---
+    six_months_ago = datetime.utcnow() - timedelta(days=180)
+    chart_records = HealthRecord.query.filter(HealthRecord.date >= six_months_ago).order_by(HealthRecord.date.asc()).all()
+    chart_labels = [record.date.strftime('%b %d, %Y') for record in chart_records]
+    chart_data = [record.weight for record in chart_records]
+
+    # --- 4. NEW: Prepare full record data for the interactive calendar ---
+    records_by_date = {}
+    for record in all_health_records:
+        date_str = record.date.strftime('%-d') # Key by day number, e.g., '1', '15', '21'
+        # This assumes one record per day for simplicity. For multiple, this would be a list.
+        records_by_date[date_str] = {
+            'weight': record.weight,
+            'body_fat': record.body_fat,
+            'notes': record.notes
+        }
+    
+    now = datetime.utcnow()
+    # Get just the day numbers for highlighting
+    measured_days = list(records_by_date.keys())
+
+    # --- 5. Pass All Data to Template ---
+    return render_template(
+        'Health.html',
+        active_page='health',
+        profile=profile,
+        latest_record=latest_record,
+        bmi=bmi,
+        health_plan_items=health_plan_items,
+        chart_labels=json.dumps(chart_labels),
+        chart_data=json.dumps(chart_data),
+        measured_days=json.dumps(measured_days),
+        records_by_date_json=json.dumps(records_by_date), # Pass full details
+        current_day=now.day
+    )
+
+
+@app.route('/profile/update', methods=['POST'])
+def update_profile():
+    profile = UserProfile.query.first()
+    if not profile:
+        profile = UserProfile()
+        db.session.add(profile)
+    
+    profile.height = request.form.get('height', type=float)
+    profile.age = request.form.get('age', type=int)
+    profile.gender = request.form.get('gender')
+    
+    db.session.commit()
+    flash('Profile updated successfully!', 'success')
+    return redirect(url_for('health'))
+
+@app.route('/health/add', methods=['POST'])
+def add_health_record():
+    date_str = request.form.get('date')
+    weight = request.form.get('weight', type=float)
+    body_fat = request.form.get('body_fat', type=float)
+    notes = request.form.get('notes')
+
+    if not date_str or not weight:
+        flash('Date and Weight are required fields.', 'danger')
+        return redirect(url_for('health'))
+
+    record_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    
+    new_record = HealthRecord(
+        date=record_date, weight=weight,
+        body_fat=body_fat, notes=notes
+    )
+    db.session.add(new_record)
+    db.session.commit()
+    flash('Health record added successfully!', 'success')
+    return redirect(url_for('health'))
+
+# Note: UI for edit/delete is not the focus of this part, but the backend is ready.
+@app.route('/health/delete/<int:record_id>', methods=['POST'])
+def delete_health_record(record_id):
+    record = HealthRecord.query.get_or_404(record_id)
+    db.session.delete(record)
+    db.session.commit()
+    flash('Health record deleted.', 'success')
+    return redirect(url_for('health'))
+
+@app.route('/health-plan/add', methods=['POST'])
+def add_health_plan_item():
+    title = request.form.get('title')
+    description = request.form.get('description')
+    if title:
+        new_item = HealthPlanItem(title=title, description=description)
+        db.session.add(new_item)
+        db.session.commit()
+        flash('Health plan item added.', 'success')
+    return redirect(url_for('health'))
+
+@app.route('/health-plan/toggle/<int:item_id>', methods=['POST'])
+def toggle_health_plan_item(item_id):
+    item = HealthPlanItem.query.get_or_404(item_id)
+    item.status = 'completed' if item.status == 'pending' else 'pending'
+    db.session.commit()
+    return redirect(url_for('health'))
+
+@app.route('/health-plan/delete/<int:item_id>', methods=['POST'])
+def delete_health_plan_item(item_id):
+    item = HealthPlanItem.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    flash('Health plan item deleted.', 'success')
+    return redirect(url_for('health'))
+
+@app.route('/health-plan/edit/<int:item_id>', methods=['GET', 'POST'])
+def edit_health_plan_item(item_id):
+    item = HealthPlanItem.query.get_or_404(item_id)
+    if request.method == 'POST':
+        item.title = request.form.get('title')
+        item.description = request.form.get('description')
+        db.session.commit()
+        flash('Health plan item updated.', 'success')
+        return redirect(url_for('health'))
+    return render_template('edit_health_plan_item.html', item=item, active_page='health')
+
+@app.route('/health/export')
+def export_health_data():
+    # 1. Fetch all data from the database
+    profile = UserProfile.query.first()
+    records = HealthRecord.query.order_by(HealthRecord.date.desc()).all()
+
+    # 2. Build the text content
+    content = "CALISTHENICS APP - HEALTH DATA EXPORT\n"
+    content += "========================================\n\n"
+    
+    if profile:
+        content += "USER PROFILE\n"
+        content += "-----------------\n"
+        content += f"Height: {profile.height or 'N/A'} cm\n"
+        content += f"Age: {profile.age or 'N/A'}\n"
+        content += f"Gender: {profile.gender or 'N/A'}\n\n"
+    
+    content += "HEALTH RECORDS\n"
+    content += "-----------------\n"
+    content += "Date, Weight (kg), Body Fat (%), Notes\n"
+    
+    if records:
+        for record in records:
+            content += f"{record.date.strftime('%Y-%m-%d')},{record.weight or 'N/A'},{record.body_fat or 'N/A'},\"{record.notes or ''}\"\n"
+    else:
+        content += "No records found.\n"
+
+    # 3. Create the response to send the file
+    return Response(
+        content,
+        mimetype="text/csv",
+        headers={"Content-disposition": f"attachment; filename=health_data_{datetime.utcnow().strftime('%Y-%m-%d')}.csv"}
+    )
+
+@app.route('/health/edit/<int:record_id>', methods=['GET', 'POST'])
+def edit_health_record(record_id):
+    record = HealthRecord.query.get_or_404(record_id)
+    if request.method == 'POST':
+        record.date = datetime.strptime(request.form.get('date'), '%Y-%m-%d').date()
+        record.weight = request.form.get('weight', type=float)
+        record.body_fat = request.form.get('body_fat', type=float)
+        record.notes = request.form.get('notes')
+        
+        db.session.commit()
+        flash('Health record updated successfully!', 'success')
+        return redirect(url_for('health'))
+        
+    return render_template('edit_health_record.html', record=record, active_page='health')
+
+#________________________________________________
 
 @app.route('/motivation')
 def motivation():
