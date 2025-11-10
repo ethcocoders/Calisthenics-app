@@ -1,0 +1,479 @@
+/* Styles specific to the Calendar page */
+
+.calendar-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 900px) {
+    .calendar-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Calendar Card */
+.calendar-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-title {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.calendar-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.current-month {
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.calendar-day:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--border-color);
+}
+
+.calendar-day.today {
+    background: rgba(255, 107, 53, 0.2);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.calendar-day.other-month {
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+.day-number {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.day-events {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.event-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.event-indicator.workout {
+    background: var(--success);
+}
+
+.event-indicator.rest {
+    background: var(--warning);
+}
+
+.event-indicator.planned {
+    background: var(--accent);
+}
+
+/* Plan Overview Card */
+.plan-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+}
+
+.plan-title {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.stat-value.workouts { color: var(--success); }
+.stat-value.completed { color: var(--primary); }
+.stat-value.planned { color: var(--accent); }
+.stat-value.rest { color: var(--warning); }
+
+/* Progress Chart */
+.progress-section {
+    margin-bottom: 25px;
+}
+
+.progress-title {
+    text-align: center;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.progress-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 4px;
+    width: 75%;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Plan List */
+.plan-list {
+    margin-top: 20px;
+}
+
+.plan-list h3 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.plan-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.plan-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    background: rgba(116, 185, 255, 0.2);
+    color: var(--accent);
+}
+
+.plan-icon.workout, .plan-icon.completed {
+    background: rgba(0, 184, 148, 0.2);
+    color: var(--success);
+}
+
+.plan-icon.rest {
+    background: rgba(253, 203, 110, 0.2);
+    color: var(--warning);
+}
+
+.plan-info {
+    flex: 1;
+}
+
+.plan-name {
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.plan-date {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.plan-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.plan-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plan-action-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text-primary);
+}
+
+.plan-action-btn.delete {
+    color: var(--danger);
+}
+
+.plan-action-btn.delete:hover {
+    background: rgba(214, 48, 49, 0.2);
+    color: white;
+}
+
+/* Add Plan Modal Styles */
+.add-plan-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .calendar-day {
+        height: 45px;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-day {
+        height: 40px;
+    }
+    .day-number {
+        font-size: 0.9rem;
+    }
+}
+
+/* --- Reusable Form & Modal Styles --- */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-form-container {
+    background-color: var(--card-bg);
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.modal-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.modal-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-form .form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.modal-form label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.modal-form input,
+.modal-form select,
+.modal-form textarea {
+    width: 100%;
+    padding: 12px;
+    background: var(--dark);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.modal-form .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.form-actions a {
+    text-decoration: none;
+
+/* --- New styles for 'Complete' functionality --- */
+
+/* Style for the 'Mark as Complete' button */
+.plan-action-btn.complete {
+    color: var(--success);
+    flex-grow: 1;
+    border: 1px solid var(--success);
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+}
+
+.plan-action-btn.complete:hover {
+    background: rgba(0, 184, 148, 0.2);
+    color: white;
+}
+
+/* Style for a day on the calendar that has a completed workout */
+.calendar-day.completed {
+    background: rgba(0, 184, 148, 0.1);
+    border-color: var(--success);
+}
+
+/* Update event indicator to show completed status (solid ring) */
+.event-indicator.completed {
+    background: transparent;
+    border: 2px solid var(--success);
+}
+
+/* Style for the status badge in the details panel */
+.plan-status {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 15px;
+    text-align: center;
+    margin-top: 15px;
+    text-transform: capitalize;
+}
+
+.plan-status.scheduled {
+    background: rgba(253, 203, 110, 0.2);
+    color: var(--warning);
+}
+
+.plan-status.completed {
+    background: rgba(0, 184, 148, 0.2);
+    color: var(--success);
+}	
+/* --- New style for the completed status badge in the actions area --- */
+.plan-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-weight: 600;
+    background: rgba(0, 184, 148, 0.2);
+    color: var(--success);
+}

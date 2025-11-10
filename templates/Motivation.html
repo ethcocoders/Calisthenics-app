@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motivation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --secondary: #ffffff;
+            --accent: #74b9ff;
+            --light: #1a1a2e;
+            --dark: #0d0d1a;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --card-bg: #161625;
+            --sidebar-bg: #0f0f1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0c0;
+            --border-color: #2a2a40;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            color: var(--text-primary);
+            padding: 20px 0;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .logo h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            padding: 0 20px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            gap: 12px;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-primary);
+            background: rgba(116, 185, 255, 0.1);
+            padding-left: 15px;
+        }
+
+        .nav-links a i {
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: var(--text-primary);
+        }
+
+        .header-actions button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            border: 1px solid var(--primary);
+        }
+
+        .header-actions button:hover {
+            background: transparent;
+            color: var(--primary);
+        }
+
+        /* Category Navigation */
+        .categories-nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: rgba(116, 185, 255, 0.2);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .category-btn i {
+            margin-right: 8px;
+        }
+
+        /* Motivational Content Grid */
+        .motivation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .motivation-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .motivation-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border-color: var(--accent);
+        }
+
+        .card-image {
+            height: 180px;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .card-category {
+            background: rgba(116, 185, 255, 0.2);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: flex-end;
+        }
+
+        .card-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .card-action-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        .card-action-btn.favorite {
+            color: var(--warning);
+        }
+
+        .card-action-btn.favorite:hover {
+            background: rgba(253, 203, 110, 0.2);
+            color: white;
+        }
+
+        .card-action-btn.delete {
+            color: var(--danger);
+        }
+
+        .card-action-btn.delete:hover {
+            background: rgba(214, 48, 49, 0.2);
+            color: white;
+        }
+
+        /* Category-specific styling */
+        .card-image.video {
+            background: linear-gradient(45deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .card-image.book {
+            background: linear-gradient(45deg, #4834d4 0%, #686de0 100%);
+        }
+
+        .card-image.quote {
+            background: linear-gradient(45deg, #00d2d3 0%, #54a0ff 100%);
+        }
+
+        .card-image.movie {
+            background: linear-gradient(45deg, #ff9ff3 0%, #5f27cd 100%);
+        }
+
+        .card-image.podcast {
+            background: linear-gradient(45deg, #55efc4 0%, #00b894 100%);
+        }
+
+        /* Add Motivation Modal */
+        .add-motivation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid var(--border-color);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .close-modal {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .file-upload:hover {
+            border-color: var(--accent);
+            background: rgba(116, 185, 255, 0.1);
+        }
+
+        .file-upload i {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .file-upload p {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .modal-btn.cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-btn.save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn.cancel:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .modal-btn.save:hover {
+            background: #e55a2b;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar .logo h2 span,
+            .sidebar .nav-links a span {
+                display: none;
+            }
+            
+            .sidebar .logo h2 {
+                justify-content: center;
+            }
+            
+            .sidebar .nav-links a {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .categories-nav {
+                justify-content: center;
+            }
+            
+            .motivation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card-content {
+                padding: 15px;
+            }
+            
+            .card-title {
+                font-size: 1.1rem;
+            }
+            
+            .form-buttons {
+                flex-direction: column;
+            }
+            
+            .modal-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h2><i class="fas fa-dumbbell"></i> <span>Calisthenics</span></h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" data-page="home"><i class="fas fa-home"></i> <span>Home</span></a></li>
+                <li><a href="#" data-page="workouts"><i class="fas fa-running"></i> <span>Workouts</span></a></li>
+                <li><a href="#" data-page="calendar"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
+                <li><a href="#" data-page="schedule"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+                <li><a href="#" data-page="health"><i class="fas fa-heartbeat"></i> <span>Health</span></a></li>
+                <li><a href="#" data-page="plan"><i class="fas fa-tasks"></i> <span>Plan</span></a></li>
+                <li><a href="#" data-page="tournament"><i class="fas fa-trophy"></i> <span>Tournament</span></a></li>
+                <li><a href="#" data-page="goals"><i class="fas fa-bullseye"></i> <span>Goals</span></a></li>
+                <li><a href="#" class="active" data-page="motivation"><i class="fas fa-fire"></i> <span>Motivation</span></a></li>
+                <li><a href="#" data-page="videos"><i class="fas fa-video"></i> <span>Videos</span></a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Motivation</h1>
+                <div class="header-actions">
+                    <button id="addMotivationBtn"><i class="fas fa-plus"></i> Add Motivation</button>
+                </div>
+            </div>
+
+            <!-- Category Navigation -->
+            <div class="categories-nav">
+                <button class="category-btn active" data-category="all">
+                    <i class="fas fa-fire"></i> All
+                </button>
+                <button class="category-btn" data-category="video">
+                    <i class="fas fa-video"></i> Videos
+                </button>
+                <button class="category-btn" data-category="book">
+                    <i class="fas fa-book"></i> Books
+                </button>
+                <button class="category-btn" data-category="quote">
+                    <i class="fas fa-quote-right"></i> Quotes
+                </button>
+                <button class="category-btn" data-category="movie">
+                    <i class="fas fa-film"></i> Movies
+                </button>
+                <button class="category-btn" data-category="podcast">
+                    <i class="fas fa-podcast"></i> Podcasts
+                </button>
+            </div>
+
+            <!-- Motivational Content Grid -->
+            <div class="motivation-grid">
+                <!-- Video Card -->
+                <div class="motivation-card" data-category="video">
+                    <div class="card-image video">
+                        <span>Calisthenics Journey Video</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">From Zero to Hero</div>
+                                <div class="card-category">Video</div>
+                            </div>
+                        </div>
+                        <div class="card-description">
+                            Watch this inspiring transformation story of a complete beginner who mastered advanced calisthenics skills in just 2 years.
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 15:42</span>
+                            <span><i class="fas fa-user"></i> Jake Williams</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="card-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Book Card -->
+                <div class="motivation-card" data-category="book">
+                    <div class="card-image book">
+                        <span>The Calisthenics Bible</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">The Calisthenics Bible</div>
+                                <div class="card-category">Book</div>
+                            </div>
+                        </div>
+                        <div class="card-description">
+                            Comprehensive guide to bodyweight training with detailed progressions, nutrition advice, and mindset strategies.
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-book"></i> 342 pages</span>
+                            <span><i class="fas fa-user"></i> Mike Chen</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="card-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quote Card -->
+                <div class="motivation-card" data-category="quote">
+                    <div class="card-image quote">
+                        <span>"The pain you feel today will be the strength you feel tomorrow."</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Strength Through Struggle</div>
+                                <div class="card-category">Quote</div>
+                            </div>
+                        </div>
+                        <div class="card-description">
+                            Powerful reminder that every challenging workout is building your future strength and resilience.
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-lightbulb"></i> Motivational</span>
+                            <span><i class="fas fa-user"></i> Unknown</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="card-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Movie Card -->
+                <div class="motivation-card" data-category="movie">
+                    <div class="card-image movie">
+                        <span>Rocky IV Training Montage</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Rocky IV - Siberian Training</div>
+                                <div class="card-category">Movie</div>
+                            </div>
+                        </div>
+                        <div class="card-description">
+                        Iconic training sequence showing Rocky's raw, natural training in the harsh Siberian wilderness - pure calisthenics inspiration.
+                    </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-film"></i> 8:34</span>
+                            <span><i class="fas fa-user"></i> Sylvester Stallone</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="card-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Podcast Card -->
+                <div class="motivation-card" data-category="podcast">
+                    <div class="card-image podcast">
+                        <span>The Mind-Muscle Connection</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">The Mind-Muscle Connection</div>
+                                <div class="card-category">Podcast</div>
+                            </div>
+                        </div>
+                        <div class="card-description">
+                            Episode 45: Learn how to develop the mental focus needed to push through plateaus and achieve your fitness goals.
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-headphones"></i> 42:18</span>
+                            <span><i class="fas fa-user"></i> Fitness Mindset</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="card-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Another Video Card -->
+                <div class="motivation-card" data-category="video">
+                    <div class="card-image video">
+                        <span>Street Workout World Championship</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Street Workout World Finals</div>
+                                <div class="card-category">Video</div>
+                            </div>
+                        </div>
+                        <div class="card-description">
+                            Watch the world's best calisthenics athletes compete in incredible displays of strength, skill, and creativity.
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 28:15</span>
+                            <span><i class="fas fa-trophy"></i> World Championship</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="card-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Another Book Card -->
+                <div class="motivation-card" data-category="book">
+                    <div class="card-image book">
+                        <span>Atomic Habits</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Atomic Habits</div>
+                                <div class="card-category">Book</div>
+                            </div>
+                        </div>
+                        <div class="card-description">
+                            Learn how to build good habits and break bad ones with this groundbreaking guide to behavior change and personal development.
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-book"></i> 320 pages</span>
+                            <span><i class="fas fa-user"></i> James Clear</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="card-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Another Quote Card -->
+                <div class="motivation-card" data-category="quote">
+                    <div class="card-image quote">
+                        <span>"Discipline is choosing between what you want now and what you want most."</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">The Power of Discipline</div>
+                                <div class="card-category">Quote</div>
+                            </div>
+                        </div>
+                        <div class="card-description">
+                            Perfect reminder for those days when you don't feel like training but know you'll regret skipping it tomorrow.
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-lightbulb"></i> Discipline</span>
+                            <span><i class="fas fa-user"></i> Abraham Lincoln</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="card-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Motivation Modal -->
+        <div class="add-motivation-modal" id="addMotivationModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Add New Motivation</h3>
+                    <button class="close-modal" id="closeModal">&times;</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motivationType">Content Type</label>
+                    <select id="motivationType" required>
+                        <option value="">Select content type</option>
+                        <option value="video">Video</option>
+                        <option value="book">Book</option>
+                        <option value="quote">Quote</option>
+                        <option value="movie">Movie/Clip</option>
+                        <option value="podcast">Podcast</option>
+                        <option value="image">Image</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motivationTitle">Title</label>
+                    <input type="text" id="motivationTitle" placeholder="Enter title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motivationDescription">Description</label>
+                    <textarea id="motivationDescription" placeholder="Describe your motivational content"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motivationAuthor">Author/Creator (Optional)</label>
+                    <input type="text" id="motivationAuthor" placeholder="Enter author or creator name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Upload Media (Image/Video)</label>
+                    <div class="file-upload" id="fileUploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload image or video</p>
+                        <p><small>Supported formats: JPG, PNG, MP4, MOV</small></p>
+                        <input type="file" id="mediaFiles" accept="image/*,video/*">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motivationURL">URL/Link (Optional)</label>
+                    <input type="url" id="motivationURL" placeholder="https://example.com">
+                </div>
+                
+                <div class="form-buttons">
+                    <button class="modal-btn cancel" id="cancelMotivationBtn">Cancel</button>
+                    <button class="modal-btn save" id="saveMotivationBtn">Add Motivation</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Motivation page functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const addMotivationBtn = document.getElementById('addMotivationBtn');
+                const addMotivationModal = document.getElementById('addMotivationModal');
+                const closeModalBtn = document.getElementById('closeModal');
+                const cancelMotivationBtn = document.getElementById('cancelMotivationBtn');
+                const saveMotivationBtn = document.getElementById('saveMotivationBtn');
+                const fileUploadArea = document.getElementById('fileUploadArea');
+                const mediaFilesInput = document.getElementById('mediaFiles');
+                const categoryButtons = document.querySelectorAll('.category-btn');
+                const motivationCards = document.querySelectorAll('.motivation-card');
+                
+                // Open modal
+                addMotivationBtn.addEventListener('click', function() {
+                    addMotivationModal.style.display = 'flex';
+                });
+                
+                // Close modal functions
+                function closeModal() {
+                    addMotivationModal.style.display = 'none';
+                    // Reset form
+                    document.getElementById('motivationType').value = '';
+                    document.getElementById('motivationTitle').value = '';
+                    document.getElementById('motivationDescription').value = '';
+                    document.getElementById('motivationAuthor').value = '';
+                    document.getElementById('motivationURL').value = '';
+                }
+                
+                closeModalBtn.addEventListener('click', closeModal);
+                cancelMotivationBtn.addEventListener('click', closeModal);
+                
+                // Close modal when clicking outside
+                addMotivationModal.addEventListener('click', function(e) {
+                    if (e.target === addMotivationModal) {
+                        closeModal();
+                    }
+                });
+                
+                // File upload functionality
+                fileUploadArea.addEventListener('click', function(e) {
+                    if (e.target !== mediaFilesInput) {
+                        mediaFilesInput.click();
+                    }
+                });
+                
+                mediaFilesInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        const fileName = this.files[0].name;
+                        fileUploadArea.innerHTML = `
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <p>File selected: ${fileName}</p>
+                            <input type="file" id="mediaFiles" accept="image/*,video/*">
+                        `;
+                        // Re-add event listener to new input
+                        document.getElementById('mediaFiles').addEventListener('change', function() {
+                            if (this.files.length > 0) {
+                                const newFileName = this.files[0].name;
+                                fileUploadArea.innerHTML = `
+                                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                                    <p>File selected: ${newFileName}</p>
+                                    <input type="file" id="mediaFiles" accept="image/*,video/*">
+                                `;
+                                document.getElementById('mediaFiles').addEventListener('change', arguments.callee);
+                            }
+                        });
+                    }
+                });
+                
+                // Save motivation
+                saveMotivationBtn.addEventListener('click', function() {
+                    const type = document.getElementById('motivationType').value;
+                    const title = document.getElementById('motivationTitle').value.trim();
+                    
+                    if (!type || !title) {
+                        alert('Please select content type and enter a title!');
+                        return;
+                    }
+                    
+                    // In a real app, this would save to database
+                    alert(`Motivation added successfully!\nType: ${type}\nTitle: ${title}`);
+                    closeModal();
+                });
+                
+                // Category filtering
+                categoryButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        // Remove active class from all buttons
+                        categoryButtons.forEach(btn => btn.classList.remove('active'));
+                        // Add active class to clicked button
+                        this.classList.add('active');
+                        
+                        const category = this.getAttribute('data-category');
+                        
+                        // Filter cards
+                        motivationCards.forEach(card => {
+                            if (category === 'all' || card.getAttribute('data-category') === category) {
+                                card.style.display = 'block';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+                
+                // Card click functionality
+                document.querySelectorAll('.motivation-card').forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        if (e.target.closest('.card-action-btn')) {
+                            return;
+                        }
+                        const title = this.querySelector('.card-title').textContent;
+                        const description = this.querySelector('.card-description').textContent;
+                        const category = this.querySelector('.card-category').textContent;
+                        
+                        alert(`Motivational Content:\n\nTitle: ${title}\nCategory: ${category}\n\n${description}`);
+                    });
+                });
+                
+                // Favorite button functionality
+                document.querySelectorAll('.card-action-btn.favorite').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const icon = this.querySelector('i');
+                        if (icon.className.includes('fa-star')) {
+                            icon.className = 'fas fa-star';
+                            this.title = 'Remove from favorites';
+                        } else {
+                            icon.className = 'far fa-star';
+                            this.title = 'Add to favorites';
+                        }
+                    });
+                });
+                
+                // Delete button functionality
+                document.querySelectorAll('.card-action-btn.delete').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const card = this.closest('.motivation-card');
+                        if (confirm('Are you sure you want to delete this motivational content?')) {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(-20px)';
+                            setTimeout(() => {
+                                card.remove();
+                            }, 300);
+                        }
+                    });
+                });
+            });
+        </script>
+</body>
+</html>
+

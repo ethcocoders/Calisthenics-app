@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --secondary: #ffffff;
+            --accent: #74b9ff;
+            --light: #1a1a2e;
+            --dark: #0d0d1a;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --card-bg: #161625;
+            --sidebar-bg: #0f0f1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0c0;
+            --border-color: #2a2a40;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            color: var(--text-primary);
+            padding: 20px 0;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .logo h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            padding: 0 20px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            gap: 12px;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-primary);
+            background: rgba(116, 185, 255, 0.1);
+            padding-left: 15px;
+        }
+
+        .nav-links a i {
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: var(--text-primary);
+        }
+
+        .header-actions button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            border: 1px solid var(--primary);
+        }
+
+        .header-actions button:hover {
+            background: transparent;
+            color: var(--primary);
+        }
+
+        /* Layout Grid */
+        .plan-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .plan-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Plan Overview Card */
+        .plan-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Plan Stats Grid */
+        .plan-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .plan-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .plan-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stat-value.total { color: var(--accent); }
+        .stat-value.completed { color: var(--success); }
+        .stat-value.pending { color: var(--primary); }
+
+        /* Progress Chart */
+        .progress-section {
+            margin-bottom: 25px;
+        }
+
+        .progress-title {
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            border-radius: 4px;
+            width: 68%;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Timeline Chart */
+        .timeline-chart {
+            margin-top: 25px;
+        }
+
+        .timeline-container {
+            height: 200px;
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+        }
+
+        .timeline-point {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .timeline-point.completed {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        .timeline-point.pending {
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .timeline-point.upcoming {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .timeline-label {
+            position: absolute;
+            top: 80px;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+            width: 60px;
+            white-space: nowrap;
+        }
+
+        /* Plan Cards Section */
+        .plan-cards {
+            margin-top: 25px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .plan-item-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .plan-item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border-color: var(--accent);
+        }
+
+        .plan-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .plan-item-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .plan-item-status {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: rgba(0, 184, 148, 0.2);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background: rgba(255, 107, 53, 0.2);
+            color: var(--primary);
+        }
+
+        .status-upcoming {
+            background: rgba(116, 185, 255, 0.2);
+            color: var(--accent);
+        }
+
+        .plan-item-details {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .plan-item-date {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        .plan-item-date i {
+            color: var(--accent);
+        }
+
+        .plan-item-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .plan-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plan-action-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        .plan-action-btn.edit {
+            color: var(--accent);
+        }
+
+        .plan-action-btn.edit:hover {
+            background: rgba(116, 185, 255, 0.2);
+            color: white;
+        }
+
+        .plan-action-btn.delete {
+            color: var(--danger);
+        }
+
+        .plan-action-btn.delete:hover {
+            background: rgba(214, 48, 49, 0.2);
+            color: white;
+        }
+
+        /* Calendar Integration */
+        .calendar-integration {
+            margin-top: 25px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .calendar-day {
+            text-align: center;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .calendar-day.planned {
+            background: rgba(116, 185, 255, 0.3);
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .calendar-day.completed {
+            background: rgba(0, 184, 148, 0.3);
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .calendar-day.today {
+            background: rgba(255, 107, 53, 0.3);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        /* Add Plan Modal */
+        .add-plan-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+
+        .close-modal {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--text-primary);
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+        }
+
+        .modal-btn.cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-btn.save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn.cancel:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .modal-btn.save:hover {
+            background: #e55a2b;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar .logo h2 span,
+            .sidebar .nav-links a span {
+                display: none;
+            }
+            
+            .sidebar .logo h2 {
+                justify-content: center;
+            }
+            
+            .sidebar .nav-links a {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .plan-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h2><i class="fas fa-dumbbell"></i> <span>Calisthenics</span></h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" data-page="home"><i class="fas fa-home"></i> <span>Home</span></a></li>
+                <li><a href="#" data-page="workouts"><i class="fas fa-running"></i> <span>Workouts</span></a></li>
+                <li><a href="#" data-page="calendar"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
+                <li><a href="#" data-page="schedule"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+                <li><a href="#" data-page="health"><i class="fas fa-heartbeat"></i> <span>Health</span></a></li>
+                <li><a href="#" class="active" data-page="plan"><i class="fas fa-tasks"></i> <span>Plan</span></a></li>
+                <li><a href="#" data-page="tournament"><i class="fas fa-trophy"></i> <span>Tournament</span></a></li>
+                <li><a href="#" data-page="goals"><i class="fas fa-bullseye"></i> <span>Goals</span></a></li>
+                <li><a href="#" data-page="motivation"><i class="fas fa-fire"></i> <span>Motivation</span></a></li>
+                <li><a href="#" data-page="videos"><i class="fas fa-video"></i> <span>Videos</span></a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Plan</h1>
+                <div class="header-actions">
+                    <button id="addPlanBtn"><i class="fas fa-plus"></i> Add Plan</button>
+                </div>
+            </div>
+
+            <div class="plan-layout">
+                <!-- Plan Overview -->
+                <div class="plan-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Plan Overview</h2>
+                    </div>
+                    
+                    <!-- Plan Stats -->
+                    <div class="plan-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Plans</div>
+                            <div class="stat-value total">12</div>
+                            <div class="stat-label">Active Plans</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Completed</div>
+                            <div class="stat-value completed">8</div>
+                            <div class="stat-label">This Month</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Pending</div>
+                            <div class="stat-value pending">4</div>
+                            <div class="stat-label">Upcoming</div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Chart -->
+                    <div class="progress-section">
+                        <h3 class="progress-title">Monthly Progress</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span>68% Completed</span>
+                            <span>8/12 plans</span>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Chart -->
+                    <div class="timeline-chart">
+                        <h3 class="progress-title">Plan Timeline</h3>
+                        <div class="timeline-container">
+                            <div class="timeline-point completed" style="left: 10%;"></div>
+                            <div class="timeline-label" style="left: 10%;">Week 1</div>
+                            
+                            <div class="timeline-point completed" style="left: 25%;"></div>
+                            <div class="timeline-label" style="left: 25%;">Week 2</div>
+                            
+                            <div class="timeline-point completed" style="left: 40%;"></div>
+                            <div class="timeline-label" style="left: 40%;">Week 3</div>
+                            
+                            <div class="timeline-point pending" style="left: 55%;"></div>
+                            <div class="timeline-label" style="left: 55%;">Week 4</div>
+                            
+                            <div class="timeline-point upcoming" style="left: 70%;"></div>
+                            <div class="timeline-label" style="left: 70%;">Week 5</div>
+                            
+                            <div class="timeline-point upcoming" style="left: 85%;"></div>
+                            <div class="timeline-label" style="left: 85%;">Week 6</div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Integration -->
+                    <div class="calendar-integration">
+                        <h3 class="progress-title">Plan Calendar</h3>
+                        <div class="calendar-grid">
+                            <div class="calendar-day">1</div>
+                            <div class="calendar-day">2</div>
+                            <div class="calendar-day">3</div>
+                            <div class="calendar-day">4</div>
+                            <div class="calendar-day">5</div>
+                            <div class="calendar-day">6</div>
+                            <div class="calendar-day planned">7</div>
+                            <div class="calendar-day">8</div>
+                            <div class="calendar-day completed">9</div>
+                            <div class="calendar-day">10</div>
+                            <div class="calendar-day">11</div>
+                            <div class="calendar-day">12</div>
+                            <div class="calendar-day">13</div>
+                            <div class="calendar-day">14</div>
+                            <div class="calendar-day planned">15</div>
+                            <div class="calendar-day completed">16</div>
+                            <div class="calendar-day">17</div>
+                            <div class="calendar-day">18</div>
+                            <div class="calendar-day">19</div>
+                            <div class="calendar-day">20</div>
+                            <div class="calendar-day today">21</div>
+                            <div class="calendar-day planned">22</div>
+                            <div class="calendar-day">23</div>
+                            <div class="calendar-day">24</div>
+                            <div class="calendar-day">25</div>
+                            <div class="calendar-day">26</div>
+                            <div class="calendar-day">27</div>
+                            <div class="calendar-day">28</div>
+                            <div class="calendar-day">29</div>
+                            <div class="calendar-day">30</div>
+                            <div class="calendar-day">31</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Details -->
+                <div class="plan-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Plan Details</h2>
+                    </div>
+                    
+                    <div class="plan-cards">
+                        <div class="cards-grid">
+                            <div class="plan-item-card" data-plan-id="1">
+                                <div class="plan-item-header">
+                                    <div>
+                                        <div class="plan-item-title">Upper Body Strength</div>
+                                        <div class="plan-item-date">
+                                            <i class="fas fa-calendar"></i>
+                                            Nov 1 - Nov 30, 2025
+                                        </div>
+                                    </div>
+                                    <span class="plan-item-status status-completed">Completed</span>
+                                </div>
+                                <div class="plan-item-details">
+                                    <p>Focus on push-ups, pull-ups, and dips progression. Target: 20 push-ups, 10 pull-ups, 8 dips.</p>
+                                </div>
+                                <div class="plan-item-actions">
+                                    <button class="plan-action-btn edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="plan-action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="plan-item-card" data-plan-id="2">
+                                <div class="plan-item-header">
+                                    <div>
+                                        <div class="plan-item-title">Core Development</div>
+                                        <div class="plan-item-date">
+                                            <i class="fas fa-calendar"></i>
+                                            Nov 5 - Nov 25, 2025
+                                        </div>
+                                    </div>
+                                    <span class="plan-item-status status-completed">Completed</span>
+                                </div>
+                                <div class="plan-item-details">
+                                    <p>Build core strength with planks, leg raises, and Russian twists. Target: 2-minute plank, 20 leg raises.</p>
+                                </div>
+                                <div class="plan-item-actions">
+                                    <button class="plan-action-btn edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="plan-action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="plan-item-card" data-plan-id="3">
+                                <div class="plan-item-header">
+                                    <div>
+                                        <div class="plan-item-title">Skill Progression</div>
+                                        <div class="plan-item-date">
+                                            <i class="fas fa-calendar"></i>
+                                            Nov 10 - Dec 10, 2025
+                                        </div>
+                                    </div>
+                                    <span class="plan-item-status status-pending">In Progress</span>
+                                </div>
+                                <div class="plan-item-details">
+                                    <p>Work on handstand balance and muscle-up progression. Daily skill practice for 15 minutes.</p>
+                                </div>
+                                <div class="plan-item-actions">
+                                    <button class="plan-action-btn edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="plan-action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="plan-item-card" data-plan-id="4">
+                                <div class="plan-item-header">
+                                    <div>
+                                        <div class="plan-item-title">Flexibility & Mobility</div>
+                                        <div class="plan-item-date">
+                                            <i class="fas fa-calendar"></i>
+                                            Nov 15 - Dec 15, 2025
+                                        </div>
+                                    </div>
+                                    <span class="plan-item-status status-upcoming">Upcoming</span>
+                                </div>
+                                <div class="plan-item-details">
+                                    <p>Improve flexibility with daily stretching routine. Focus on shoulders, hips, and hamstrings.</p>
+                                </div>
+                                <div class="plan-item-actions">
+                                    <button class="plan-action-btn edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="plan-action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="plan-item-card" data-plan-id="5">
+                                <div class="plan-item-header">
+                                    <div>
+                                        <div class="plan-item-title">Endurance Training</div>
+                                        <div class="plan-item-date">
+                                            <i class="fas fa-calendar"></i>
+                                            Nov 20 - Dec 20, 2025
+                                        </div>
+                                    </div>
+                                    <span class="plan-item-status status-upcoming">Upcoming</span>
+                                </div>
+                                <div class="plan-item-details">
+                                    <p>Build muscular endurance with high-rep circuits. Target: 50 push-ups in 5 minutes.</p>
+                                </div>
+                                <div class="plan-item-actions">
+                                    <button class="plan-action-btn edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="plan-action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Plan Modal -->
+        <div class="add-plan-modal" id="addPlanModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Create New Plan</h3>
+                    <button class="close-modal" id="closeModal">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label for="planTitle">Plan Title</label>
+                    <input type="text" id="planTitle" placeholder="Enter plan title" required>
+                </div>
+                <div class="form-group">
+                    <label for="planType">Plan Type</label>
+                    <select id="planType" required>
+                        <option value="">Select plan type</option>
+                        <option value="strength">Strength Training</option>
+                        <option value="skill">Skill Development</option>
+                        <option value="endurance">Endurance</option>
+                        <option value="flexibility">Flexibility & Mobility</option>
+                        <option value="recovery">Recovery</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="planStartDate">Start Date</label>
+                    <input type="date" id="planStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="planEndDate">End Date</label>
+                    <input type="date" id="planEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="planDescription">Plan Description</label>
+                    <textarea id="planDescription" placeholder="Describe your plan goals and activities" rows="4" required></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button class="modal-btn cancel" id="cancelPlanBtn">Cancel</button>
+                    <button class="modal-btn save" id="savePlanBtn">Create Plan</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Plan functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const addPlanBtn = document.getElementById('addPlanBtn');
+                const addPlanModal = document.getElementById('addPlanModal');
+                const closeModalBtn = document.getElementById('closeModal');
+                const cancelPlanBtn = document.getElementById('cancelPlanBtn');
+                const savePlanBtn = document.getElementById('savePlanBtn');
+                
+                // Set date inputs to current month
+                const today = new Date();
+                const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                
+                document.getElementById('planStartDate').value = startDate.toISOString().split('T')[0];
+                document.getElementById('planEndDate').value = endDate.toISOString().split('T')[0];
+                
+                // Open modal
+                addPlanBtn.addEventListener('click', function() {
+                    addPlanModal.style.display = 'flex';
+                });
+                
+                // Close modal functions
+                function closeModal() {
+                    addPlanModal.style.display = 'none';
+                    // Reset form
+                    document.getElementById('planTitle').value = '';
+                    document.getElementById('planType').value = '';
+                    document.getElementById('planDescription').value = '';
+                }
+                
+                closeModalBtn.addEventListener('click', closeModal);
+                cancelPlanBtn.addEventListener('click', closeModal);
+                
+                // Close modal when clicking outside
+                addPlanModal.addEventListener('click', function(e) {
+                    if (e.target === addPlanModal) {
+                        closeModal();
+                    }
+                });
+                
+                // Save plan
+                savePlanBtn.addEventListener('click', function() {
+                    const title = document.getElementById('planTitle').value.trim();
+                    const type = document.getElementById('planType').value;
+                    const startDate = document.getElementById('planStartDate').value;
+                    const endDate = document.getElementById('planEndDate').value;
+                    const description = document.getElementById('planDescription').value.trim();
+                    
+                    if (!title || !type || !startDate || !endDate || !description) {
+                        alert('Please fill in all required fields!');
+                        return;
+                    }
+                    
+                    // In a real app, this would save to database
+                    alert(`Plan created successfully!\nTitle: ${title}\nType: ${type}\nDuration: ${startDate} to ${endDate}`);
+                    closeModal();
+                    
+                    // In a real implementation, you would add the new plan to the UI
+                });
+                
+                // Plan card click functionality
+                document.querySelectorAll('.plan-item-card').forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        if (e.target.closest('.plan-action-btn')) {
+                            return;
+                        }
+                        const title = this.querySelector('.plan-item-title').textContent;
+                        const description = this.querySelector('.plan-item-details p').textContent;
+                        const date = this.querySelector('.plan-item-date').textContent;
+                        const status = this.querySelector('.plan-item-status').textContent;
+                        
+                        alert(`Plan Details:\n\nTitle: ${title}\nStatus: ${status}\n${date}\n\nDescription: ${description}`);
+                    });
+                });
+                
+                // Edit button functionality
+                document.querySelectorAll('.plan-action-btn.edit').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        alert('Edit functionality would open a form to modify this plan.');
+                    });
+                });
+                
+                // Delete button functionality
+                document.querySelectorAll('.plan-action-btn.delete').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const card = this.closest('.plan-item-card');
+                        if (confirm('Are you sure you want to delete this plan?')) {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateX(-20px)';
+                            setTimeout(() => {
+                                card.remove();
+                            }, 300);
+                        }
+                    });
+                });
+                
+                // Calendar day click functionality
+                document.querySelectorAll('.calendar-day').forEach(day => {
+                    day.addEventListener('click', function() {
+                        if (this.classList.contains('planned') || this.classList.contains('completed') || this.classList.contains('today')) {
+                            const dayNumber = this.textContent;
+                            const status = this.classList.contains('completed') ? 'completed' : 
+                                         this.classList.contains('planned') ? 'planned' : 'today';
+                            alert(`Plan activities for November ${dayNumber}, 2025\nStatus: ${status}`);
+                        } else {
+                            alert(`No plans scheduled for November ${this.textContent}, 2025`);
+                        }
+                    });
+                });
+            });
+        </script>
+</body>
+</html>
+

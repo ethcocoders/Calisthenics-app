@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+</head>
+<body>
+    <div class="container">
+        {% include '_sidebar.html' %}
+        <div class="main-content">
+            <div class="header"><h1>Calendar</h1><div class="header-actions"><button id="addPlanBtn"><i class="fas fa-plus"></i> Add Plan</button></div></div>
+            {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+            <div class="calendar-layout">
+                <div class="calendar-card"><div class="calendar-header"><div class="calendar-title">Monthly Calendar</div><div class="calendar-nav"><button class="nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button><button class="nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button></div></div><div class="current-month" id="currentMonth"></div><div class="weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div><div class="calendar-grid" id="calendarGrid"></div></div>
+                <div class="plan-card" id="detailsPanel">
+                    <div id="overviewContent"><h2 class="plan-title">This Month's Overview</h2><div class="stats-grid"><div class="stat-card"><div class="stat-label">Total Workouts</div><div class="stat-value workouts">{{ total_workouts }}</div></div><div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value completed">{{ completed_workouts }}</div></div><div class="stat-card"><div class="stat-label">Planned</div><div class="stat-value planned">{{ planned_workouts }}</div></div><div class="stat-card"><div class="stat-label">Rest Days</div><div class="stat-value rest">{{ rest_days }}</div></div></div><div class="progress-section"><h3 class="progress-title">Monthly Progress</h3><div class="progress-bar"><div class="progress-fill" style="width: {{ completion_percentage }}%;"></div></div><div class="progress-info"><span>{{ completion_percentage }}% Complete</span><span>{{ completed_workouts }}/{{ total_workouts }} workouts</span></div></div><div class="plan-list"><h3>Upcoming Plans</h3>{% for event in upcoming_events %}<div class="plan-item"><div class="plan-icon {{ event.category }}"><i class="fas fa-{% if event.category == 'workout' %}dumbbell{% elif event.category == 'rest' %}bed{% else %}tasks{% endif %}"></i></div><div class="plan-info"><div class="plan-name">{{ event.title }}</div><div class="plan-date">{{ event.start_time.strftime('%b %d, %I:%M %p') }}</div></div></div>{% else %}<p style="text-align: center; color: var(--text-secondary); padding: 10px;">No upcoming plans in the next 5 days.</p>{% endfor %}</div></div>
+                    <div id="detailsContent" style="display:none;"><h2 class="plan-title" id="detailsTitle"></h2><div class="plan-list"><div class="plan-item"><div class="plan-icon" id="detailsIcon"></div><div class="plan-info"><div class="plan-name" id="detailsName"></div><div class="plan-date" id="detailsDate"></div></div>
+                        <!-- NEW STRUCTURE FOR ACTIONS -->
+                        <div class="plan-actions">
+                            <div id="actionButtons" style="display: flex; gap: 8px;">
+                                <a id="editLink" class="plan-action-btn"><i class="fas fa-edit"></i></a>
+                                <form id="deleteForm" method="POST" onsubmit="return confirm('Are you sure?');"><button type="submit" class="plan-action-btn delete"><i class="fas fa-trash"></i></button></form>
+                            </div>
+                            <div id="completedBadge" class="plan-status-badge" style="display: none;">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </div>
+                        </div>
+                    </div></div><form id="completeForm" method="POST" style="display:none;"><button type="submit" class="plan-action-btn complete"><i class="fas fa-check-circle"></i> Mark as Complete</button></form><button class="nav-btn" id="backToOverview" style="margin: 20px auto 0; display:flex;"><i class="fas fa-arrow-left"></i></button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="addPlanModal" class="modal"><div class="modal-form-container"><h2 class="plan-title">Add New Plan</h2><form action="{{ url_for('add_event') }}" method="POST" class="modal-form"><div class="form-grid"><div class="form-group full-width"><label for="title">Plan Name</label><input type="text" id="title" name="title" required placeholder="Enter plan name"></div><div class="form-group"><label for="category">Plan Type</label><select id="category" name="category" required><option value="workout">Workout Session</option><option value="rest">Rest Day</option><option value="planned">Planned Activity</option></select></div><div class="form-group"><label for="start_time">Date & Time</label><input type="datetime-local" id="start_time" name="start_time" required></div></div><div class="form-actions"><button type="button" id="cancelPlanBtn" class="header-actions-button" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);">Cancel</button><button type="submit" class="header-actions-button" style="background: var(--primary); color: white; border: none;">Save Plan</button></div></form></div></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const events_data = JSON.parse('{{ events_data_json | safe }}');
+            // (Other variable declarations remain the same)
+            
+            const overviewContent = document.getElementById('overviewContent');
+            const detailsContent = document.getElementById('detailsContent');
+            const completeForm = document.getElementById('completeForm');
+            // --- NEW: Get new elements ---
+            const actionButtons = document.getElementById('actionButtons');
+            const completedBadge = document.getElementById('completedBadge');
+
+            function showEventDetails(dateStr) {
+                const event = events_data[dateStr];
+                if (event) {
+                    overviewContent.style.display = 'none';
+                    detailsContent.style.display = 'block';
+                    document.getElementById('detailsTitle').textContent = `Plan for ${dateStr}`;
+                    document.getElementById('detailsName').textContent = event.name;
+                    document.getElementById('detailsDate').textContent = event.time;
+                    const icon = document.getElementById('detailsIcon');
+                    icon.className = `plan-icon ${event.status === 'completed' ? 'completed' : event.type}`;
+                    if (event.status === 'completed') {
+                        icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                        // --- NEW: Show badge, hide buttons ---
+                        completedBadge.style.display = 'flex';
+                        actionButtons.style.display = 'none';
+                        completeForm.style.display = 'none';
+                    } else {
+                        // --- NEW: Show buttons, hide badge ---
+                        completedBadge.style.display = 'none';
+                        actionButtons.style.display = 'flex';
+                        if (event.type === 'workout') {
+                            icon.innerHTML = '<i class="fas fa-dumbbell"></i>';
+                            completeForm.style.display = 'block';
+                            completeForm.action = `/calendar/complete/${event.id}`;
+                        } else {
+                            if (event.type === 'rest') icon.innerHTML = '<i class="fas fa-bed"></i>';
+                            else icon.innerHTML = '<i class="fas fa-tasks"></i>';
+                            completeForm.style.display = 'none';
+                        }
+                    }
+                    document.getElementById('editLink').href = `/calendar/edit/${event.id}`;
+                    document.getElementById('deleteForm').action = `/calendar/delete/${event.id}`;
+                } else {
+                    openModalWithDate(dateStr);
+                }
+            }
+
+            // (The rest of the JS for calendar generation, navigation, and modals remains unchanged)
+            const calendarGrid = document.getElementById('calendarGrid');const currentMonthElement = document.getElementById('currentMonth');const prevMonthBtn = document.getElementById('prevMonth');const nextMonthBtn = document.getElementById('nextMonth');let currentDate = new Date();let currentYear = currentDate.getFullYear();let currentMonth = currentDate.getMonth();function generateCalendar(year, month) {calendarGrid.innerHTML = '';currentMonthElement.textContent = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });const firstDay = new Date(year, month, 1).getDay();const daysInMonth = new Date(year, month + 1, 0).getDate();for (let i = 0; i < firstDay; i++) { calendarGrid.appendChild(document.createElement('div')); }for (let day = 1; day <= daysInMonth; day++) {const date = new Date(year, month, day);const dateStr = formatDate(date);const isToday = date.toDateString() === new Date().toDateString();const dayElement = document.createElement('div');let dayClasses = `calendar-day ${isToday ? 'today' : ''}`;let eventHTML = '';const event = events_data[dateStr];if (event) {if (event.status === 'completed') { dayClasses += ' completed'; }eventHTML = `<div class="day-events"><div class="event-indicator ${event.status === 'completed' ? 'completed' : event.type}"></div></div>`;}dayElement.className = dayClasses;dayElement.innerHTML = `<div class="day-number">${day}</div>${eventHTML}`;dayElement.addEventListener('click', () => showEventDetails(dateStr));calendarGrid.appendChild(dayElement);}}function formatDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+            document.getElementById('backToOverview').addEventListener('click', () => { detailsContent.style.display = 'none'; overviewContent.style.display = 'block'; });prevMonthBtn.addEventListener('click', () => { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } generateCalendar(currentYear, currentMonth); });nextMonthBtn.addEventListener('click', () => { currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } generateCalendar(currentYear, currentMonth); });generateCalendar(currentYear, currentMonth);const modal = document.getElementById('addPlanModal');const dateInput = document.getElementById('start_time');function openModalWithDate(dateStr = null) {const d = dateStr ? new Date(dateStr) : new Date();d.setHours(19, 0);dateInput.value = d.toISOString().slice(0, 16);modal.style.display = 'flex';}document.getElementById('addPlanBtn').addEventListener('click', () => openModalWithDate());document.getElementById('cancelPlanBtn').addEventListener('click', () => { modal.style.display = 'none'; });modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+        });
+    </script>
+</body>
+</html>

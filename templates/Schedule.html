@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/schedule.css') }}">
+</head>
+<body>
+    <div class="container">
+        {% include '_sidebar.html' %}
+        <div class="main-content">
+            <div class="header"><h1>Schedule</h1><div class="header-actions"><button id="addScheduleBtn"><i class="fas fa-plus"></i> Add Schedule</button></div></div>
+            {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+            <div class="schedule-layout">
+                <div class="schedule-board">
+                    <div class="board-header"><h2 class="board-title">Weekly Schedule</h2></div>
+                    <div class="weekly-schedule">
+                        {% for day in days_of_week %}
+                        <div class="day-column">
+                            <div class="day-header {% if day == current_day_name %}today{% endif %}">{{ day }}</div>
+                            {% for item in schedule_items_by_day[day] %}
+                            <div class="schedule-item {{ item.category }} {% if item.status == 'completed' %}completed{% endif %}">
+                                <div class="item-actions">
+                                    {% if item.status == 'scheduled' %}
+                                        {% if item.category == 'workout' %}
+                                        <form action="{{ url_for('complete_schedule_item', item_id=item.id) }}" method="POST" style="margin:0;"><button type="submit" class="item-action-btn" title="Mark as Complete"><i class="fas fa-check"></i></button></form>
+                                        {% endif %}
+                                    <a href="{{ url_for('edit_schedule_item', item_id=item.id) }}" class="item-action-btn" title="Edit"><i class="fas fa-edit"></i></a>
+                                    {% endif %}
+                                    <form action="{{ url_for('delete_schedule_item', item_id=item.id) }}" method="POST" onsubmit="return confirm('Delete this item?')" style="margin:0;"><button type="submit" class="item-action-btn" title="Delete"><i class="fas fa-trash"></i></button></form>
+                                </div>
+                                <div class="item-time">{{ item.time.strftime('%I:%M %p') }}</div>
+                                <div class="item-name">{{ item.title }}</div>
+                                <div class="item-type">{{ item.details }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="plan-overview">
+                    <h2 class="overview-title">Schedule Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-label">Total Sessions</div><div class="stat-value workouts">{{ total_sessions }}</div><div class="stat-label">This Week</div></div>
+                        <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value completed">{{ completed_sessions }}</div><div class="stat-label">Sessions</div></div>
+                        <div class="stat-card"><div class="stat-label">Workout Days</div><div class="stat-value planned">{{ workout_sessions }}</div><div class="stat-label">Scheduled</div></div>
+                        <div class="stat-card"><div class="stat-label">Rest Days</div><div class="stat-value rest">{{ rest_sessions }}</div><div class="stat-label">Planned</div></div>
+                    </div>
+                    <div class="progress-section">
+                        <h3 class="progress-title">Weekly Progress</h3>
+                        <div class="progress-bar"><div class="progress-fill" style="width: {{ completion_percentage }}%;"></div></div>
+                        <div class="progress-info"><span>{{ completion_percentage }}% Completed</span><span>{{ completed_sessions }}/{{ total_sessions }} sessions</span></div>
+                    </div>
+                    <div class="sticky-board">
+                        <div class="board-header" style="margin-bottom: 10px;"><h3 class="sticky-title">Notes & Reminders</h3><button id="addNoteBtn" class="nav-btn" style="width: 30px; height: 30px;"><i class="fas fa-plus"></i></button></div>
+                        <div class="sticky-notes">
+                            {% for note in sticky_notes %}
+                            <div class="sticky-note {{ note.color }}">
+                                <h4>{{ note.title }}</h4><p>{{ note.content }}</p>
+                                <div class="sticky-actions">
+                                    <a href="{{ url_for('edit_note', note_id=note.id) }}" class="sticky-action"><i class="fas fa-edit"></i></a>
+                                    <form action="{{ url_for('delete_note', note_id=note.id) }}" method="POST" onsubmit="return confirm('Delete this note?')"><button type="submit" class="sticky-action"><i class="fas fa-trash"></i></button></form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="addScheduleModal" class="add-schedule-modal"><div class="modal-content"><div class="modal-header"><h3 class="modal-title">Add New Schedule</h3><button class="close-modal">&times;</button></div><form action="{{ url_for('add_schedule_item') }}" method="POST"><div class="form-group"><label for="title">Name</label><input type="text" name="title" required></div><div class="form-group"><label for="day_of_week">Day</label><select name="day_of_week" required>{% for day in days_of_week %}<option value="{{ day }}">{{ day }}</option>{% endfor %}</select></div><div class="form-group"><label for="time">Time</label><input type="time" name="time" required></div><div class="form-group"><label for="category">Category</label><select name="category" required><option value="workout">Workout</option><option value="rest">Rest</option><option value="planned">Planned</option></select></div><div class="form-group"><label for="details">Details</label><textarea name="details" rows="2"></textarea></div><div class="form-buttons"><button type="button" class="modal-btn cancel">Cancel</button><button type="submit" class="modal-btn save">Save</button></div></form></div></div>
+        <div id="addNoteModal" class="add-schedule-modal"><div class="modal-content"><div class="modal-header"><h3 class="modal-title">Add New Note</h3><button class="close-modal">&times;</button></div><form action="{{ url_for('add_note') }}" method="POST"><div class="form-group"><label for="title">Title</label><input type="text" name="title" required></div><div class="form-group"><label for="content">Content</label><textarea name="content" rows="3" required></textarea></div><div class="form-group"><label for="color">Color</label><select name="color" required><option value="yellow">Yellow</option><option value="orange">Orange</option><option value="pink">Pink</option><option value="green">Green</option></select></div><div class="form-buttons"><button type="button" class="modal-btn cancel">Cancel</button><button type="submit" class="modal-btn save">Save</button></div></form></div></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addScheduleModal = document.getElementById('addScheduleModal');
+            const addNoteModal = document.getElementById('addNoteModal');
+            document.getElementById('addScheduleBtn').addEventListener('click', () => { addScheduleModal.style.display = 'flex'; });
+            document.getElementById('addNoteBtn').addEventListener('click', () => { addNoteModal.style.display = 'flex'; });
+            function closeModal(modal) { if (modal) { modal.style.display = 'none'; } }
+            document.querySelectorAll('.close-modal, .modal-btn.cancel').forEach(btn => { btn.addEventListener('click', () => closeModal(btn.closest('.add-schedule-modal'))); });
+            document.querySelectorAll('.add-schedule-modal').forEach(modal => { modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); }); });
+        });
+    </script>
+</body>
+</html>

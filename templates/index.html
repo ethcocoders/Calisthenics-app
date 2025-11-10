@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calisthenics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar is now inherited from the partial template -->
+        {% include '_sidebar.html' %}
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-content" id="home">
+                <div class="header">
+                    <h1>Dashboard</h1>
+                    <div class="header-actions">
+                        <button><i class="fas fa-plus"></i> New Workout</button>
+                    </div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-running"></i>
+                            <h3>Total Workouts</h3>
+                        </div>
+                        <div class="stat-number">24</div>
+                        <p style="color: var(--text-secondary);">This month: 8 workouts completed</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-bullseye"></i>
+                            <h3>Goals Achieved</h3>
+                        </div>
+                        <div class="stat-number">12/15</div>
+                        <p style="color: var(--text-secondary);">80% of monthly goals completed</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-heartbeat"></i>
+                            <h3>Weight</h3>
+                        </div>
+                        <div class="stat-number">75kg</div>
+                        <p style="color: var(--text-secondary);">BMI: 22.1 (Normal)</p>
+                    </div>
+                </div>
+
+                <div class="workout-list">
+                    <h3 style="margin-bottom: 15px;">Recent Workouts</h3>
+                    <div class="workout-item">
+                        <div>
+                            <strong>Upper Body Blast</strong>
+                            <p>Push-ups, Pull-ups, Dips</p>
+                        </div>
+                        <span>Today, 6:30 PM</span>
+                    </div>
+                    <div class="workout-item">
+                        <div>
+                            <strong>Leg Day</strong>
+                            <p>Squats, Lunges, Calf Raises</p>
+                        </div>
+                        <span>Yesterday, 7:00 PM</span>
+                    </div>
+                    <div class="workout-item">
+                        <div>
+                            <strong>Core Focus</strong>
+                            <p>Planks, Leg Raises, Russian Twists</p>
+                        </div>
+                        <span>Nov 5, 6:45 PM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

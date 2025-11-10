@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --secondary: #ffffff;
+            --accent: #74b9ff;
+            --light: #1a1a2e;
+            --dark: #0d0d1a;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --card-bg: #161625;
+            --sidebar-bg: #0f0f1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0c0;
+            --border-color: #2a2a40;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            color: var(--text-primary);
+            padding: 20px 0;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .logo h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            padding: 0 20px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            gap: 12px;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-primary);
+            background: rgba(116, 185, 255, 0.1);
+            padding-left: 15px;
+        }
+
+        .nav-links a i {
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: var(--text-primary);
+        }
+
+        .header-actions button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            border: 1px solid var(--primary);
+        }
+
+        .header-actions button:hover {
+            background: transparent;
+            color: var(--primary);
+        }
+
+        /* Layout Grid */
+        .goals-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .goals-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Progress Overview Card */
+        .progress-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Progress Stats */
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stat-value.completed { color: var(--success); }
+        .stat-value.total { color: var(--accent); }
+        .stat-value.progress { color: var(--primary); }
+
+        /* Progress Chart */
+        .progress-chart {
+            margin-bottom: 25px;
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .chart-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .chart-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            border-radius: 4px;
+            width: 76%;
+        }
+
+        .chart-info {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Before/After Gallery */
+        .gallery-section {
+            margin-top: 25px;
+        }
+
+        .gallery-title {
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .gallery-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .gallery-info {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .gallery-info h4 {
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .gallery-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Goals List */
+        .goals-list-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        .goals-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .goal-item {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .goal-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            border-color: var(--accent);
+        }
+
+        .goal-item.completed {
+            border-left: 4px solid var(--success);
+            opacity: 0.8;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .goal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .goal-status {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: rgba(0, 184, 148, 0.2);
+            color: var(--success);
+        }
+
+        .status-in-progress {
+            background: rgba(255, 107, 53, 0.2);
+            color: var(--primary);
+        }
+
+        .status-pending {
+            background: rgba(116, 185, 255, 0.2);
+            color: var(--accent);
+        }
+
+        .goal-description {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .goal-progress {
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .goal-media {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .media-item {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .media-item i {
+            color: var(--accent);
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .goal-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .goal-action-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        .goal-action-btn.complete {
+            color: var(--success);
+        }
+
+        .goal-action-btn.complete:hover {
+            background: rgba(0, 184, 148, 0.2);
+            color: white;
+        }
+
+        .goal-action-btn.delete {
+            color: var(--danger);
+        }
+
+        .goal-action-btn.delete:hover {
+            background: rgba(214, 48, 49, 0.2);
+            color: white;
+        }
+
+        /* Add Goal Modal */
+        .add-goal-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid var(--border-color);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+
+        .close-modal {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--text-primary);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: var(--accent);
+            background: rgba(116, 185, 255, 0.1);
+        }
+
+        .file-upload i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .file-upload p {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .uploaded-files {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .uploaded-file {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .uploaded-file i {
+            color: var(--success);
+            cursor: pointer;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+        }
+
+        .modal-btn.cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-btn.save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn.cancel:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .modal-btn.save:hover {
+            background: #e55a2b;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar .logo h2 span,
+            .sidebar .nav-links a span {
+                display: none;
+            }
+            
+            .sidebar .logo h2 {
+                justify-content: center;
+            }
+            
+            .sidebar .nav-links a {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .progress-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h2><i class="fas fa-dumbbell"></i> <span>Calisthenics</span></h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" data-page="home"><i class="fas fa-home"></i> <span>Home</span></a></li>
+                <li><a href="#" data-page="workouts"><i class="fas fa-running"></i> <span>Workouts</span></a></li>
+                <li><a href="#" data-page="calendar"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
+                <li><a href="#" data-page="schedule"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+                <li><a href="#" data-page="health"><i class="fas fa-heartbeat"></i> <span>Health</span></a></li>
+                <li><a href="#" data-page="plan"><i class="fas fa-tasks"></i> <span>Plan</span></a></li>
+                <li><a href="#" data-page="tournament"><i class="fas fa-trophy"></i> <span>Tournament</span></a></li>
+                <li><a href="#" class="active" data-page="goals"><i class="fas fa-bullseye"></i> <span>Goals</span></a></li>
+                <li><a href="#" data-page="motivation"><i class="fas fa-fire"></i> <span>Motivation</span></a></li>
+                <li><a href="#" data-page="videos"><i class="fas fa-video"></i> <span>Videos</span></a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Goals</h1>
+                <div class="header-actions">
+                    <button id="addGoalBtn"><i class="fas fa-plus"></i> Add Goal</button>
+                </div>
+            </div>
+
+            <div class="goals-layout">
+                <!-- Progress Overview -->
+                <div class="progress-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Goal Progress</h2>
+                    </div>
+                    
+                    <!-- Progress Stats -->
+                    <div class="progress-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Completed Goals</div>
+                            <div class="stat-value completed">8</div>
+                            <div class="stat-label">Out of 15</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Goals</div>
+                            <div class="stat-value total">15</div>
+                            <div class="stat-label">Active Goals</div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Progress Chart -->
+                    <div class="progress-chart">
+                        <h3 class="chart-title">Overall Goal Completion</h3>
+                        <div class="chart-bar">
+                            <div class="chart-fill"></div>
+                        </div>
+                        <div class="chart-info">
+                            <span>76% Completed</span>
+                            <span>8/15 goals</span>
+                        </div>
+                    </div>
+
+                    <!-- Before/After Gallery -->
+                    <div class="gallery-section">
+                        <h3 class="gallery-title">Before & After Progress</h3>
+                        <div class="gallery-grid">
+                            <div class="gallery-item">
+                                <div class="gallery-image">
+                                    <span>Before: June 2025</span>
+                                </div>
+                                <div class="gallery-info">
+                                    <h4>Starting Point</h4>
+                                    <p>Beginner level, basic form</p>
+                                </div>
+                            </div>
+                            <div class="gallery-item">
+                                <div class="gallery-image" style="background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);">
+                                    <span>After: November 2025</span>
+                                </div>
+                                <div class="gallery-info">
+                                    <h4>Current Progress</h4>
+                                    <p>Intermediate level, improved strength</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goals List -->
+                <div class="goals-list-card">
+                    <h2 class="goals-title">Your Goals</h2>
+                    
+                    <div class="goal-item completed">
+                        <div class="goal-header">
+                            <div>
+                                <div class="goal-title">100 Push-ups in a Row</div>
+                                <div class="goal-status status-completed">Completed</div>
+                            </div>
+                        </div>
+                        <div class="goal-description">
+                            Achieve 100 consecutive push-ups with proper form and full range of motion.
+                        </div>
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%;"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span>100/100 push-ups</span>
+                                <span>Completed: Nov 5, 2025</span>
+                            </div>
+                        </div>
+                        <div class="goal-media">
+                            <div class="media-item">
+                                <i class="fas fa-image"></i>
+                                <span>2 photos</span>
+                            </div>
+                            <div class="media-item">
+                                <i class="fas fa-video"></i>
+                                <span>1 video</span>
+                            </div>
+                        </div>
+                        <div class="goal-actions">
+                            <button class="goal-action-btn complete">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                            <button class="goal-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-item">
+                        <div class="goal-header">
+                            <div>
+                                <div class="goal-title">First Muscle-up</div>
+                                <div class="goal-status status-in-progress">In Progress</div>
+                            </div>
+                        </div>
+                        <div class="goal-description">
+                            Perform your first clean muscle-up on the pull-up bar with controlled movement.
+                        </div>
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%;"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span>65% Progress</span>
+                                <span>Target: Dec 15, 2025</span>
+                            </div>
+                        </div>
+                        <div class="goal-media">
+                            <div class="media-item">
+                                <i class="fas fa-image"></i>
+                                <span>3 photos</span>
+                            </div>
+                            <div class="media-item">
+                                <i class="fas fa-video"></i>
+                                <span>2 videos</span>
+                            </div>
+                        </div>
+                        <div class="goal-actions">
+                            <button class="goal-action-btn complete">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="goal-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-item">
+                        <div class="goal-header">
+                            <div>
+                                <div class="goal-title">Handstand Hold - 60 Seconds</div>
+                                <div class="goal-status status-in-progress">In Progress</div>
+                            </div>
+                        </div>
+                        <div class="goal-description">
+                            Hold a freestanding handstand for 60 seconds with good form and control.
+                        </div>
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 42%;"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span>25/60 seconds</span>
+                                <span>Target: Jan 20, 2026</span>
+                            </div>
+                        </div>
+                        <div class="goal-media">
+                            <div class="media-item">
+                                <i class="fas fa-image"></i>
+                                <span>1 photo</span>
+                            </div>
+                            <div class="media-item">
+                                <i class="fas fa-video"></i>
+                                <span>4 videos</span>
+                            </div>
+                        </div>
+                        <div class="goal-actions">
+                            <button class="goal-action-btn complete">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="goal-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-item">
+                        <div class="goal-header">
+                            <div>
+                                <div class="goal-title">Planche Progression</div>
+                                <div class="goal-status status-pending">Not Started</div>
+                            </div>
+                        </div>
+                        <div class="goal-description">
+                            Begin planche progression training with tuck planche as the first milestone.
+                        </div>
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%;"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span>0% Progress</span>
+                                <span>Target: Feb 1, 2026</span>
+                            </div>
+                        </div>
+                        <div class="goal-media">
+                            <div class="media-item">
+                                <i class="fas fa-plus"></i>
+                                <span>Add media</span>
+                            </div>
+                        </div>
+                        <div class="goal-actions">
+                            <button class="goal-action-btn complete">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="goal-action-btn delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Goal Modal -->
+        <div class="add-goal-modal" id="addGoalModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Create New Goal</h3>
+                    <button class="close-modal" id="closeModal">&times;</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="goalTitle">Goal Title</label>
+                    <input type="text" id="goalTitle" placeholder="Enter your goal title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="goalDescription">Goal Description</label>
+                    <textarea id="goalDescription" placeholder="Describe your goal in detail"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="goalTargetDate">Target Date</label>
+                    <input type="date" id="goalTargetDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Upload Progress Media</label>
+                    <div class="file-upload" id="fileUploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload photos or videos</p>
+                        <p><small>Supported formats: JPG, PNG, MP4, MOV</small></p>
+                        <input type="file" id="mediaFiles" multiple accept="image/*,video/*">
+                    </div>
+                    <div class="uploaded-files" id="uploadedFilesContainer">
+                        <!-- Uploaded files will appear here -->
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="goalNotes">Notes & Progress Updates</label>
+                    <textarea id="goalNotes" placeholder="Add any notes about your goal or progress updates"></textarea>
+                </div>
+                
+                <div class="form-buttons">
+                    <button class="modal-btn cancel" id="cancelGoalBtn">Cancel</button>
+                    <button class="modal-btn save" id="saveGoalBtn">Create Goal</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Goals functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const addGoalBtn = document.getElementById('addGoalBtn');
+                const addGoalModal = document.getElementById('addGoalModal');
+                const closeModalBtn = document.getElementById('closeModal');
+                const cancelGoalBtn = document.getElementById('cancelGoalBtn');
+                const saveGoalBtn = document.getElementById('saveGoalBtn');
+                const fileUploadArea = document.getElementById('fileUploadArea');
+                const mediaFilesInput = document.getElementById('mediaFiles');
+                const uploadedFilesContainer = document.getElementById('uploadedFilesContainer');
+                
+                // Set target date to 30 days from now
+                const today = new Date();
+                const targetDate = new Date(today);
+                targetDate.setDate(today.getDate() + 30);
+                document.getElementById('goalTargetDate').value = targetDate.toISOString().split('T')[0];
+                
+                // Open modal
+                addGoalBtn.addEventListener('click', function() {
+                    addGoalModal.style.display = 'flex';
+                });
+                
+                // Close modal functions
+                function closeModal() {
+                    addGoalModal.style.display = 'none';
+                    // Reset form
+                    document.getElementById('goalTitle').value = '';
+                    document.getElementById('goalDescription').value = '';
+                    document.getElementById('goalNotes').value = '';
+                    uploadedFilesContainer.innerHTML = '';
+                }
+                
+                closeModalBtn.addEventListener('click', closeModal);
+                cancelGoalBtn.addEventListener('click', closeModal);
+                
+                // Close modal when clicking outside
+                addGoalModal.addEventListener('click', function(e) {
+                    if (e.target === addGoalModal) {
+                        closeModal();
+                    }
+                });
+                
+                // File upload functionality
+                fileUploadArea.addEventListener('click', function(e) {
+                    if (e.target !== mediaFilesInput) {
+                        mediaFilesInput.click();
+                    }
+                });
+                
+                mediaFilesInput.addEventListener('change', function() {
+                    const files = Array.from(this.files);
+                    files.forEach(file => {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'uploaded-file';
+                        fileItem.innerHTML = `
+                            ${file.type.startsWith('image') ? '<i class="fas fa-image"></i>' : '<i class="fas fa-video"></i>'}
+                            <span>${file.name}</span>
+                            <i class="fas fa-times remove-file" data-filename="${file.name}"></i>
+                        `;
+                        uploadedFilesContainer.appendChild(fileItem);
+                    });
+                    
+                    // Add event listeners to remove buttons
+                    document.querySelectorAll('.remove-file').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const filename = this.getAttribute('data-filename');
+                            const fileItem = this.closest('.uploaded-file');
+                            fileItem.remove();
+                        });
+                    });
+                });
+                
+                // Save goal
+                saveGoalBtn.addEventListener('click', function() {
+                    const title = document.getElementById('goalTitle').value.trim();
+                    const description = document.getElementById('goalDescription').value.trim();
+                    const targetDate = document.getElementById('goalTargetDate').value;
+                    const notes = document.getElementById('goalNotes').value.trim();
+                    
+                    if (!title || !targetDate) {
+                        alert('Please fill in required fields!');
+                        return;
+                    }
+                    
+                    // In a real app, this would save to database
+                    const uploadedFiles = document.querySelectorAll('.uploaded-file').length;
+                    alert(`Goal created successfully!\nTitle: ${title}\nTarget Date: ${targetDate}\n${uploadedFiles} files uploaded`);
+                    closeModal();
+                });
+                
+                // Goal action functionality
+                document.querySelectorAll('.goal-action-btn.complete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const goalItem = this.closest('.goal-item');
+                        goalItem.classList.toggle('completed');
+                        const icon = this.querySelector('i');
+                        const status = goalItem.querySelector('.goal-status');
+                        
+                        if (goalItem.classList.contains('completed')) {
+                            icon.className = 'fas fa-undo';
+                            status.textContent = 'Completed';
+                            status.className = 'goal-status status-completed';
+                        } else {
+                            icon.className = 'fas fa-check';
+                            status.textContent = 'In Progress';
+                            status.className = 'goal-status status-in-progress';
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('.goal-action-btn.delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const goalItem = this.closest('.goal-item');
+                        if (confirm('Are you sure you want to delete this goal?')) {
+                            goalItem.style.opacity = '0';
+                            goalItem.style.transform = 'translateX(-20px)';
+                            setTimeout(() => {
+                                goalItem.remove();
+                            }, 300);
+                        }
+                    });
+                });
+                
+                // Gallery item click functionality
+                document.querySelectorAll('.gallery-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const title = this.querySelector('h4').textContent;
+                        const description = this.querySelector('p').textContent;
+                        alert(`Gallery Item:\n\n${title}\n${description}`);
+                    });
+                });
+            });
+        </script>
+</body>
+</html>
+

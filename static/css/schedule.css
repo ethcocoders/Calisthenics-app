@@ -1,0 +1,300 @@
+/* Styles specific to the Schedule page */
+.schedule-layout {
+    display: grid;
+    /* Use a responsive grid that adapts to screen size */
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+/* --- Schedule Board --- */
+.schedule-board {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    min-width: 0; 
+}
+
+.board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.board-title {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+/* Weekly Schedule Grid */
+.weekly-schedule {
+    display: grid;
+    /* Make columns wider and allow horizontal scrolling */
+    grid-auto-columns: minmax(200px, 1fr); 
+    grid-auto-flow: column;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 15px; /* Space for scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.weekly-schedule::-webkit-scrollbar { height: 8px; }
+.weekly-schedule::-webkit-scrollbar-track { background: transparent; }
+.weekly-schedule::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+.day-column {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    /* Allow columns to grow with content, important for spacing */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.day-header {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 5px; /* Reduced margin */
+    border-radius: 8px;
+    font-weight: 600;
+    background: rgba(116, 185, 255, 0.2);
+    color: var(--accent);
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.day-header.today {
+    background: rgba(255, 107, 53, 0.2);
+    color: var(--primary);
+}
+
+/* --- Improved Schedule Item Card --- */
+.schedule-item {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--success);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    /* Use flexbox for better internal layout */
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* Space between text elements */
+}
+
+.schedule-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    border-left-color: var(--primary);
+}
+
+.schedule-item.rest { border-left-color: var(--warning); }
+.schedule-item.planned { border-left-color: var(--accent); }
+
+.item-time {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.item-name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.item-type {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    word-break: break-word; /* Prevent long text from overflowing */
+}
+
+/* --- Plan Overview & Sticky Notes --- */
+.plan-overview {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    min-width: 0;
+}
+
+.overview-title { font-size: 1.5rem; color: var(--text-primary); margin-bottom: 20px; text-align: center; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+.stat-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); }
+.stat-value { font-size: 1.8rem; font-weight: bold; margin: 10px 0; }
+.stat-label { color: var(--text-secondary); font-size: 0.9rem; }
+.stat-value.workouts { color: var(--success); }
+.stat-value.completed { color: var(--primary); }
+.stat-value.planned { color: var(--accent); }
+.stat-value.rest { color: var(--warning); }
+
+.progress-section { margin-bottom: 25px; }
+.progress-title { text-align: center; margin-bottom: 15px; color: var(--text-primary); }
+.progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+.progress-fill { height: 100%; background: var(--primary); border-radius: 4px; }
+.progress-info { display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 0.9rem; }
+
+/* --- Polished Sticky Notes Board --- */
+.sticky-board {
+    margin-top: 25px;
+}
+
+.sticky-title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.sticky-notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px; /* Increased gap for better separation */
+}
+
+.sticky-note {
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    /* Use a classic "handwriting" style font */
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+}
+
+.sticky-note:hover {
+    transform: scale(1.05) rotate(0deg) !important; /* Straighten out on hover */
+    box-shadow: 10px 10px 25px rgba(0,0,0,0.4);
+    z-index: 10;
+}
+
+.sticky-note.yellow {
+    background: #f1c40f;
+    color: #3d3d3d;
+    transform: rotate(-2deg);
+}
+
+.sticky-note.orange {
+    background: #e67e22;
+    color: #ffffff;
+    transform: rotate(1deg);
+}
+
+.sticky-note.pink {
+    background: #e91e63;
+    color: #ffffff;
+    transform: rotate(-1deg);
+}
+
+.sticky-note.green {
+    background: #2ecc71;
+    color: #ffffff;
+    transform: rotate(2.5deg);
+}
+
+/* Alternate notes to vary the rotation */
+.sticky-note:nth-child(even) { transform: rotate(2deg); }
+.sticky-note:nth-child(3n) { transform: rotate(-2.5deg); }
+.sticky-note:nth-child(5n) { transform: rotate(3deg); }
+
+.sticky-note h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.sticky-note p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+.sticky-actions {
+    margin-top: auto;
+    display: flex;
+    gap: 5px;
+    padding-top: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sticky-note:hover .sticky-actions {
+    opacity: 1;
+}
+
+.sticky-action {
+    background: rgba(0,0,0,0.15);
+    border: none;
+    color: inherit;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.sticky-action:hover {
+    background: rgba(0,0,0,0.3);
+}
+
+
+/* --- Responsiveness Polish --- */
+@media (max-width: 1200px) {
+    /* Stack layout sooner for better readability on smaller desktops */
+    .schedule-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    /* For tablets, reduce the fixed column width to show more days */
+    .weekly-schedule {
+        grid-auto-columns: minmax(160px, 1fr);
+    }
+    .main-content, .schedule-board, .plan-overview {
+        padding: 20px; /* More consistent padding */
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content { padding: 15px; }
+    .header h1 { font-size: 1.5rem; }
+    .sticky-notes, .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* --- Modals & Actions (Polished) --- */
+.add-schedule-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+.modal-content { background: var(--card-bg); border-radius: 10px; padding: 25px; width: 90%; max-width: 500px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-title { font-size: 1.3rem; color: var(--text-primary); }
+.close-modal { background: transparent; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 8px; color: var(--text-primary); }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-primary); }
+.form-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.modal-btn { padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600; border: none; }
+.modal-btn.cancel { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
+.modal-btn.save { background: var(--primary); color: white; }
+.modal-btn.cancel:hover { background: rgba(255,255,255,0.1); }
+.modal-btn.save:hover { background: #e55a2b; }
+
+.item-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 5px; opacity: 0; transition: opacity 0.3s ease; }
+.schedule-item:hover .item-actions { opacity: 1; }
+.item-action-btn { background: rgba(0,0,0,0.3); border: none; color: var(--text-secondary); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; padding: 0; }
+.item-action-btn:hover { background: var(--primary); color: white; }
+.schedule-item.completed { opacity: 0.6; border-left-color: var(--border-color); }

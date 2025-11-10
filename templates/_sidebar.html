@@ -1,0 +1,17 @@
+<div class="sidebar">
+    <div class="logo">
+        <h2><i class="fas fa-dumbbell"></i> <span>Calisthenics</span></h2>
+    </div>
+    <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'index' }}"><i class="fas fa-home"></i> <span>Home</span></a></li>
+        <li><a href="{{ url_for('workouts') }}" class="{{ 'active' if active_page == 'workouts' }}"><i class="fas fa-running"></i> <span>Workouts</span></a></li>
+        <li><a href="{{ url_for('calendar') }}" class="{{ 'active' if active_page == 'calendar' }}"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
+        <li><a href="{{ url_for('schedule') }}" class="{{ 'active' if active_page == 'schedule' }}"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+        <li><a href="{{ url_for('health') }}" class="{{ 'active' if active_page == 'health' }}"><i class="fas fa-heartbeat"></i> <span>Health</span></a></li>
+        <li><a href="{{ url_for('plan') }}" class="{{ 'active' if active_page == 'plan' }}"><i class="fas fa-tasks"></i> <span>Plan</span></a></li>
+        <li><a href="{{ url_for('tournament') }}" class="{{ 'active' if active_page == 'tournament' }}"><i class="fas fa-trophy"></i> <span>Tournament</span></a></li>
+        <li><a href="{{ url_for('goals') }}" class="{{ 'active' if active_page == 'goals' }}"><i class="fas fa-bullseye"></i> <span>Goals</span></a></li>
+        <li><a href="{{ url_for('motivation') }}" class="{{ 'active' if active_page == 'motivation' }}"><i class="fas fa-fire"></i> <span>Motivation</span></a></li>
+        <li><a href="{{ url_for('videos') }}" class="{{ 'active' if active_page == 'videos' }}"><i class="fas fa-video"></i> <span>Videos</span></a></li>
+    </ul>
+</div>
