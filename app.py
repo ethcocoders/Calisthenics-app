@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, date
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, Response
 from flask_sqlalchemy import SQLAlchemy
@@ -25,12 +25,18 @@ migrate = Migrate(app, db)
 
 
 # --- Define Database Model ---
+
 # --- Define UserProfile Model ---
 class UserProfile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     height = db.Column(db.Float, nullable=True) # in cm
     age = db.Column(db.Integer, nullable=True)
     gender = db.Column(db.String(50), nullable=True)
+    level = db.Column(db.Integer, nullable=False, default=1)
+    experience_points = db.Column(db.Integer, nullable=False, default=0)
+    
+    # Relationship to access challenges created by this user
+    created_challenges = db.relationship('Challenge', backref='creator', lazy='dynamic')
 
     def __repr__(self):
         return f'<UserProfile {self.id}>'
@@ -92,6 +98,17 @@ class ScheduleItem(db.Model):
     def __repr__(self):
         return f'<ScheduleItem {self.title}>'
 
+# --- Define TrainingPlan Model ---
+class TrainingPlan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='upcoming') # upcoming, pending, completed
+
+    def __repr__(self):
+        return f'<TrainingPlan {self.title}>'
 
 # --- Define StickyNote Model ---
 class StickyNote(db.Model):
@@ -102,6 +119,59 @@ class StickyNote(db.Model):
 
     def __repr__(self):
         return f'<StickyNote {self.title}>'
+
+# --- Define Challenge Model ---
+class Challenge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    level_requirement = db.Column(db.Integer, nullable=False, default=1)
+    xp_reward = db.Column(db.Integer, nullable=False, default=50)
+    task_details = db.Column(db.String(300), nullable=False)
+    time_limit = db.Column(db.String(50), nullable=True)
+    
+    # New columns for user-created challenges
+    is_user_created = db.Column(db.Boolean, default=False, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_profile.id'), nullable=True) # Nullable for system challenges
+
+    def __repr__(self):
+        return f'<Challenge {self.title}>'
+
+# --- Define UserChallenge (Association) Model ---
+class UserChallenge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_profile.id'), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='locked') # locked, unlocked, active, completed
+
+    # Relationships to easily access related objects
+    user = db.relationship('UserProfile', backref=db.backref('challenges', lazy=True))
+    challenge = db.relationship('Challenge', backref=db.backref('participants', lazy=True))
+
+    def __repr__(self):
+        return f'<UserChallenge User {self.user_id} - Challenge {self.challenge_id}: {self.status}>'
+
+# --- Define Badge Model ---
+class Badge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    challenges_required = db.Column(db.Integer, unique=True, nullable=False)
+
+    def __repr__(self):
+        return f'<Badge {self.name}>'
+
+# --- Define UserBadge (Association) Model ---
+class UserBadge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_profile.id'), nullable=False)
+    badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=False)
+    date_earned = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    user = db.relationship('UserProfile', backref=db.backref('earned_badges', lazy='dynamic'))
+    badge = db.relationship('Badge')
+
+    def __repr__(self):
+        return f'<UserBadge User {self.user_id} earned {self.badge.name}>'
 
 # --- Main Application Routes ---
 
@@ -168,10 +238,102 @@ def dashboard():
 def goals():
     return render_template('Goals.html', active_page='goals')
 
+#________Plan section_________
+
 @app.route('/plan')
 def plan():
-    return render_template('Plan.html', active_page='plan')
+    # 1. Fetch all training plans from the database
+    all_plans = TrainingPlan.query.order_by(TrainingPlan.start_date).all()
 
+    # 2. NEW: Process plans into a dictionary keyed by date for the JS calendar
+    plans_by_day = {}
+    for plan in all_plans:
+        current_date = plan.start_date
+        while current_date <= plan.end_date:
+            date_str = current_date.isoformat() # 'YYYY-MM-DD'
+            # Store the plan details for this specific day
+            plans_by_day[date_str] = {
+                'title': plan.title,
+                'status': plan.status,
+                'description': plan.description
+            }
+            current_date += timedelta(days=1)
+
+    # 3. Calculate overview stats (unchanged)
+    total_plans = len(all_plans)
+    completed_plans = TrainingPlan.query.filter_by(status='completed').count()
+    pending_plans = total_plans - completed_plans
+    completion_percentage = round((completed_plans / total_plans) * 100) if total_plans > 0 else 0
+    
+    # 4. Get current date info for calendar highlighting
+    today = date.today()
+
+    # 5. Pass all data to the template
+    return render_template(
+        'Plan.html',
+        active_page='plan',
+        all_plans=all_plans,
+        total_plans=total_plans,
+        completed_plans=completed_plans,
+        pending_plans=pending_plans,
+        completion_percentage=completion_percentage,
+        plans_for_js=json.dumps(plans_by_day), # Pass the new dictionary
+        today_iso=today.isoformat()
+    )
+
+@app.route('/plans/add', methods=['POST'])
+def add_plan():
+    title = request.form.get('title')
+    description = request.form.get('description')
+    start_date_str = request.form.get('start_date')
+    end_date_str = request.form.get('end_date')
+
+    if not all([title, description, start_date_str, end_date_str]):
+        flash('All fields are required.', 'danger')
+        return redirect(url_for('plan'))
+
+    start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+    end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+    # Determine status based on dates
+    today = date.today()
+    status = 'pending'
+    if start_date > today:
+        status = 'upcoming'
+    
+    new_plan = TrainingPlan(
+        title=title, description=description, 
+        start_date=start_date, end_date=end_date, status=status
+    )
+    db.session.add(new_plan)
+    db.session.commit()
+    flash('New training plan added successfully!', 'success')
+    return redirect(url_for('plan'))
+
+@app.route('/plans/edit/<int:plan_id>', methods=['GET', 'POST'])
+def edit_plan(plan_id):
+    plan = TrainingPlan.query.get_or_404(plan_id)
+    if request.method == 'POST':
+        plan.title = request.form.get('title')
+        plan.description = request.form.get('description')
+        plan.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
+        plan.end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
+        plan.status = request.form.get('status')
+        db.session.commit()
+        flash('Training plan updated successfully!', 'success')
+        return redirect(url_for('plan'))
+    
+    return render_template('edit_plan.html', plan=plan, active_page='plan')
+
+@app.route('/plans/delete/<int:plan_id>', methods=['POST'])
+def delete_plan(plan_id):
+    plan = TrainingPlan.query.get_or_404(plan_id)
+    db.session.delete(plan)
+    db.session.commit()
+    flash('Training plan deleted successfully.', 'success')
+    return redirect(url_for('plan'))
+
+#_________________________________
 
 # ------SCHEDULE SECTION -----‐---
 @app.route('/schedule')
@@ -596,9 +758,200 @@ def edit_health_record(record_id):
 def motivation():
     return render_template('Motivation.html', active_page='motivation')
 
+# Helper function to define the XP required for each level (can be placed above the routes)
+def xp_for_level(level):
+    """Calculates the total XP required to reach a certain level."""
+    return int(1000 * (1.1 ** (level - 1)))
+
+#---------TOURNAMENT -------------------------
 @app.route('/tournament')
 def tournament():
-    return render_template('Tournament.html', active_page='tournament')
+    # 1. Fetch Core Data
+    profile = UserProfile.query.first()
+    if not profile:
+        return "User profile not found. Please seed the database.", 404
+
+    # 2. NEW: Unlock Challenges based on User Level
+    # Find all challenges the user is high enough level for, but are still 'locked'
+    unlockable_challenges = UserChallenge.query.filter(
+        UserChallenge.user_id == profile.id,
+        UserChallenge.status == 'locked',
+        Challenge.id == UserChallenge.challenge_id, # Explicit join condition
+        Challenge.level_requirement <= profile.level
+    ).all()
+
+    if unlockable_challenges:
+        for uc in unlockable_challenges:
+            uc.status = 'unlocked' # Change status from 'locked' to 'unlocked'
+        db.session.commit()
+        flash('New challenges have been unlocked!', 'info')
+
+    # 3. Fetch all data for rendering
+    all_user_challenges = UserChallenge.query.filter_by(user_id=profile.id).join(Challenge).order_by(Challenge.level_requirement).all()
+    earned_badges = UserBadge.query.filter_by(user_id=profile.id).join(Badge).order_by(Badge.challenges_required).all()
+
+    # 4. Calculate Level and XP Bar (unchanged)
+    current_level = profile.level
+    current_xp = profile.experience_points
+    xp_for_current_level = xp_for_level(current_level)
+    xp_for_next_level = xp_for_level(current_level + 1)
+    xp_in_level = current_xp - xp_for_current_level
+    xp_needed_for_level_up = xp_for_next_level - xp_for_current_level
+    xp_percentage = round((xp_in_level / xp_needed_for_level_up) * 100) if xp_needed_for_level_up > 0 else 0
+    
+    # 5. Determine Rank (unchanged)
+    rank = "Bronze"
+    if current_level >= 10: rank = "Silver"
+    if current_level >= 20: rank = "Gold"
+    if current_level >= 30: rank = "Platinum"
+    sub_rank_tier = (current_level % 10)
+    if sub_rank_tier < 3: sub_rank = "III"
+    elif sub_rank_tier < 7: sub_rank = "II"
+    else: sub_rank = "I"
+    full_rank = f"{rank} {sub_rank}"
+
+    # 6. Calculate Stats (placeholders)
+    tournaments_participated = 5
+    wins = 2
+    win_streak = 1
+
+    # 7. Pass all data to the template
+    return render_template(
+        'Tournament.html',
+        active_page='tournament',
+        profile=profile,
+        xp_percentage=xp_percentage,
+        xp_for_next_level=xp_for_next_level,
+        full_rank=full_rank,
+        tournaments_participated=tournaments_participated,
+        wins=wins,
+        win_streak=win_streak,
+        all_user_challenges=all_user_challenges,
+        earned_badges=earned_badges # Pass earned badges to the template
+    )
+
+@app.route('/challenges/start/<int:user_challenge_id>', methods=['POST'])
+def start_challenge(user_challenge_id):
+    # In a real multi-user app, you would get the current_user
+    profile = UserProfile.query.first()
+    user_challenge = UserChallenge.query.filter_by(id=user_challenge_id, user_id=profile.id).first_or_404()
+
+    # Check if the user meets the level requirement
+    if profile.level >= user_challenge.challenge.level_requirement:
+        user_challenge.status = 'active'
+        db.session.commit()
+        flash(f"Challenge '{user_challenge.challenge.title}' started! Good luck!", 'success')
+    else:
+        flash("You do not meet the level requirement for this challenge.", 'danger')
+        
+    return redirect(url_for('tournament'))
+
+@app.route('/challenges/create', methods=['POST'])
+def create_challenge():
+    profile = UserProfile.query.first() # In a real app, this would be the current_user
+    
+    title = request.form.get('title')
+    task_details = request.form.get('task_details')
+    level_req = request.form.get('level_requirement', type=int)
+    xp_reward = request.form.get('xp_reward', type=int)
+
+    if not all([title, task_details, level_req, xp_reward]):
+        flash('All fields are required to create a challenge.', 'danger')
+        return redirect(url_for('tournament'))
+
+    new_challenge = Challenge(
+        title=title,
+        task_details=task_details,
+        level_requirement=level_req,
+        xp_reward=xp_reward,
+        is_user_created=True,
+        user_id=profile.id
+    )
+    db.session.add(new_challenge)
+    # Also create the 'locked' status for the creator
+    user_challenge_link = UserChallenge(user_id=profile.id, challenge=new_challenge, status='locked')
+    db.session.add(user_challenge_link)
+    
+    db.session.commit()
+    flash('Your custom challenge has been created!', 'success')
+    return redirect(url_for('tournament'))
+
+@app.route('/challenges/edit/<int:challenge_id>', methods=['GET', 'POST'])
+def edit_challenge(challenge_id):
+    challenge = Challenge.query.get_or_404(challenge_id)
+    profile = UserProfile.query.first()
+
+    # Security check: ensure the current user is the one who created the challenge
+    if not challenge.is_user_created or challenge.user_id != profile.id:
+        flash('You do not have permission to edit this challenge.', 'danger')
+        return redirect(url_for('tournament'))
+
+    if request.method == 'POST':
+        challenge.title = request.form.get('title')
+        challenge.task_details = request.form.get('task_details')
+        challenge.level_requirement = request.form.get('level_requirement', type=int)
+        challenge.xp_reward = request.form.get('xp_reward', type=int)
+        db.session.commit()
+        flash('Your challenge has been updated.', 'success')
+        return redirect(url_for('tournament'))
+
+    return render_template('edit_challenge.html', challenge=challenge, active_page='tournament')
+
+@app.route('/challenges/delete/<int:challenge_id>', methods=['POST'])
+def delete_challenge(challenge_id):
+    challenge = Challenge.query.get_or_404(challenge_id)
+    profile = UserProfile.query.first()
+
+    # Security check: ensure the current user is the one who created the challenge
+    if not challenge.is_user_created or challenge.user_id != profile.id:
+        flash('You do not have permission to delete this challenge.', 'danger')
+        return redirect(url_for('tournament'))
+    
+    # Delete all associated user_challenge links first to avoid errors
+    UserChallenge.query.filter_by(challenge_id=challenge.id).delete()
+    
+    db.session.delete(challenge)
+    db.session.commit()
+    flash('Your custom challenge has been deleted.', 'success')
+    return redirect(url_for('tournament'))
+
+@app.route('/challenges/complete/<int:user_challenge_id>', methods=['POST'])
+def complete_challenge(user_challenge_id):
+    profile = UserProfile.query.first()
+    user_challenge = UserChallenge.query.filter_by(id=user_challenge_id, user_id=profile.id).first_or_404()
+
+    if user_challenge.status in ['active', 'unlocked']: # Allow completing unlocked challenges too
+        # 1. Update status and award XP
+        user_challenge.status = 'completed'
+        xp_reward = user_challenge.challenge.xp_reward
+        profile.experience_points += xp_reward
+        flash(f"Challenge '{user_challenge.challenge.title}' completed! You earned {xp_reward} XP!", 'success')
+
+        # 2. Check for Level Up
+        xp_for_next_level = xp_for_level(profile.level + 1)
+        if profile.experience_points >= xp_for_next_level:
+            profile.level += 1
+            flash(f"Congratulations! You've reached Level {profile.level}!", 'info')
+
+        # 3. NEW: Check for Badge Awards
+        completed_count = UserChallenge.query.filter_by(user_id=profile.id, status='completed').count()
+        eligible_badges = Badge.query.filter(Badge.challenges_required <= completed_count).all()
+        earned_badge_ids = {ub.badge_id for ub in profile.earned_badges.all()}
+
+        for badge in eligible_badges:
+            if badge.id not in earned_badge_ids:
+                new_user_badge = UserBadge(user_id=profile.id, badge_id=badge.id)
+                db.session.add(new_user_badge)
+                flash(f"New Badge Unlocked: {badge.name}!", 'success')
+        
+        db.session.commit()
+    else:
+        flash("This challenge is not active.", 'warning')
+
+    return redirect(url_for('tournament'))
+
+
+#-----------------------------------------------
 
 @app.route('/videos')
 def videos():
@@ -606,5 +959,5 @@ def videos():
 
 
 # --- Run the Application ---
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True, use_reloader=True)

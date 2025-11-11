@@ -1,0 +1,5 @@
+nohup: ignoring input
+sending incremental file list
+rsync: [sender] change_dir "/data/data/com.termux/files/home/Calisthenics-app/Calisthenics-app" failed: No such file or directory (2)
+rsync: [Receiver] mkdir "/data/data/com.termux/files/home/Calisthenics-app/storage/shared/Acode/Calisthenics-app" failed: No such file or directory (2)
+rsync error: error in file IO (code 11) at main.c(791) [Receiver=3.4.1]

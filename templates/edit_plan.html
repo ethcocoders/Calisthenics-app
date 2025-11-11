@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Training Plan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/plan.css') }}">
+</head>
+<body>
+    <div class="container">
+        {% include '_sidebar.html' %}
+        <div class="main-content">
+            <div class="header">
+                <h1>Edit Training Plan</h1>
+            </div>
+            <div class="modal-content" style="margin: 0 auto;">
+                <form action="{{ url_for('edit_plan', plan_id=plan.id) }}" method="POST">
+                    <div class="form-group">
+                        <label>Plan Title</label>
+                        <input type="text" name="title" value="{{ plan.title }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" value="{{ plan.start_date.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="end_date" value="{{ plan.end_date.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="status" required>
+                            <option value="upcoming" {% if plan.status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                            <option value="pending" {% if plan.status == 'pending' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if plan.status == 'completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Plan Description</label>
+                        <textarea name="description" rows="4" required>{{ plan.description }}</textarea>
+                    </div>
+                    <div class="form-buttons">
+                        <a href="{{ url_for('plan') }}" class="modal-btn cancel">Cancel</a>
+                        <button type="submit" class="modal-btn save">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,202 @@
+/* ==========================================================================
+   Styles for the Tournament Feature
+   ========================================================================== */
+
+/* --- Layout & Main Cards --- */
+.tournament-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        "level stats"
+        "challenges visualizations";
+    gap: 25px;
+}
+
+.tournament-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.level-system { grid-area: level; }
+.stats-grid { grid-area: stats; }
+.challenges { grid-area: challenges; }
+.visualizations { grid-area: visualizations; }
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-title {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+/* --- Level System Card --- */
+.level-display {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.level-rank {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.level-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+.xp-bar-container {
+    height: 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--primary));
+    border-radius: 6px;
+    transition: width 0.5s ease-in-out;
+}
+.xp-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* --- Stats Grid Card --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 15px; /* Less padding as it's a grid of items */
+}
+.stat-item {
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease;
+}
+.stat-item:hover { transform: translateY(-5px); }
+.stat-value { font-size: 2.2rem; font-weight: bold; color: var(--primary); margin: 5px 0; }
+.stat-label { color: var(--text-secondary); font-size: 0.9rem; }
+
+/* --- Challenges Card --- */
+.challenge-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.challenge-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 15px;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+.challenge-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+.challenge-icon.tier-0 { background: rgba(108, 122, 137, 0.2); color: #bdc3c7; } /* Bronze */
+.challenge-icon.tier-1 { background: rgba(116, 185, 255, 0.2); color: var(--accent); } /* Silver */
+.challenge-icon.tier-2 { background: rgba(253, 203, 110, 0.2); color: var(--warning); } /* Gold */
+.challenge-icon.tier-3 { background: rgba(0, 184, 148, 0.2); color: var(--success); } /* Platinum */
+
+.challenge-title { font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+.challenge-task { font-size: 0.9rem; color: var(--text-secondary); }
+.challenge-reward { font-weight: 700; color: var(--success); font-size: 1rem; text-align: right; }
+.challenge-btn { padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; border: none; transition: all 0.3s ease; white-space: nowrap; }
+.challenge-btn.start { background: var(--primary); color: white; }
+.challenge-btn.start:hover { background: #e55a2b; }
+.challenge-btn.complete { background: var(--accent); color: var(--dark); }
+.challenge-btn.complete:hover { background: #a1c4fd; }
+.challenge-btn.completed { background: transparent; border: 1px solid var(--success); color: var(--success); cursor: default; }
+.challenge-btn.locked { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); cursor: not-allowed; }
+
+/* --- Visualizations Card --- */
+.charts-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+.chart-title { text-align: center; margin-bottom: 15px; color: var(--text-primary); }
+.level-chart-visual { display: flex; justify-content: space-around; align-items: flex-end; height: 150px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); }
+.chart-bar { width: 25px; background: var(--accent); border-radius: 3px 3px 0 0; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.calendar-day { text-align: center; padding: 5px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+.calendar-day.tournament { background: rgba(116, 185, 255, 0.3); color: var(--accent); font-weight: bold; }
+.calendar-day.completed { background: rgba(0, 184, 148, 0.3); color: var(--success); font-weight: bold; }
+.calendar-day.today { border: 2px solid var(--primary); }
+
+/* --- Modal Styling --- */
+.join-tournament-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 13, 26, 0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+.join-tournament-modal .modal-content { animation: slideIn 0.3s ease-out; }
+@keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-content { background: var(--card-bg); border-radius: 10px; padding: 25px; width: 90%; max-width: 450px; border: 1px solid var(--border-color); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-title { font-size: 1.3rem; color: var(--text-primary); }
+.close-modal { background: transparent; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; }
+.tournament-details { line-height: 1.6; color: var(--text-secondary); margin-bottom: 25px; }
+.tournament-details p { margin-bottom: 10px; }
+.tournament-details strong { color: var(--text-primary); }
+.modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-btn { padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600; border: none; }
+.modal-btn.cancel { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
+.modal-btn.save { background: var(--primary); color: white; }
+.modal-btn.cancel:hover { background: rgba(255,255,255,0.1); }
+.modal-btn.save:hover { background: #e55a2b; }
+
+/* --- Responsive Polish --- */
+@media (max-width: 1200px) {
+    .tournament-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "level"
+            "stats"
+            "challenges"
+            "visualizations";
+    }
+}
+@media (max-width: 768px) {
+    .challenge-item {
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "details reward"
+            "action action";
+        row-gap: 15px;
+    }
+    .challenge-icon { display: none; }
+    .challenge-details { grid-area: details; }
+    .challenge-reward { grid-area: reward; }
+    .challenge-action { grid-area: action; }
+}
+@media (max-width: 600px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .charts-layout { grid-template-columns: 1fr; }
+}
