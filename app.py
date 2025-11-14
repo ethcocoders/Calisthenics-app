@@ -8,6 +8,8 @@ from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 import uuid
 from moviepy.editor import VideoFileClip
+import moviepy
+print(moviepy.__version__)
 
 # Get the base directory of the project
 basedir = os.path.abspath(os.path.dirname(__file__))
