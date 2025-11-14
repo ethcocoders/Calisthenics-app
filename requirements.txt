@@ -5,3 +5,4 @@ SQLAlchemy
 Werkzeug
 moviepy
 gunicorn
+ffmpeg-python

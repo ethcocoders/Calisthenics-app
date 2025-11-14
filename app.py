@@ -1,3 +1,4 @@
+import ffmpeg
 import json
 from datetime import datetime, time, timedelta, date
 import os
@@ -273,6 +274,7 @@ class UserBadge(db.Model):
 
 # --- REPLACE THE Video MODEL WITH THIS UPDATED VERSION ---
 
+# --- REPLACE THE Video MODEL WITH THIS UPDATED VERSION ---
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -282,7 +284,7 @@ class Video(db.Model):
     file_path = db.Column(db.String(300), nullable=False)
     thumbnail_path = db.Column(db.String(300), nullable=True)
     duration = db.Column(db.String(20), nullable=True) # e.g., "12:45"
-    size_mb = db.Column(db.Float, nullable=True) # NEW: To store file size in MB
+    size_mb = db.Column(db.Float, nullable=True) # To store file size in MB
     
     upload_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     views = db.Column(db.Integer, default=0)
@@ -291,7 +293,7 @@ class Video(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user_profile.id'), nullable=True)
 
     def __repr__(self):
-        return f'<Video {self.title}>'
+        return f'<Video {self.title}>'    
 
 # --- Main Application Routes ---
 
@@ -1399,21 +1401,25 @@ def upload_video():
     try:
         file.save(video_full_path)
 
-        # --- Video Processing using MoviePy ---
-        duration_str = None
-        size_in_mb = None
-        relative_thumbnail_path = None
+        # --- Video Processing using ffmpeg-python ---
+        
+        # 1. Probe video to get metadata
+        probe = ffmpeg.probe(video_full_path)
+        video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+        duration_in_seconds = video_stream['duration']
+        duration_str = format_duration(duration_in_seconds)
 
-        with VideoFileClip(video_full_path) as clip:
-            # 1. Get Duration
-            duration_in_seconds = clip.duration
-            duration_str = format_duration(duration_in_seconds)
-
-            # 2. Generate Thumbnail (at the 1-second mark)
-            unique_thumbnail_name = f"{os.path.splitext(unique_filename)[0]}.jpg"
-            thumbnail_full_path = os.path.join(app.config['THUMBNAIL_UPLOAD_FOLDER'], unique_thumbnail_name)
-            clip.save_frame(thumbnail_full_path, t=1)
-            relative_thumbnail_path = os.path.join('uploads', 'thumbnails', unique_thumbnail_name)
+        # 2. Generate Thumbnail (at the 1-second mark)
+        unique_thumbnail_name = f"{os.path.splitext(unique_filename)[0]}.jpg"
+        thumbnail_full_path = os.path.join(app.config['THUMBNAIL_UPLOAD_FOLDER'], unique_thumbnail_name)
+        
+        (
+            ffmpeg
+            .input(video_full_path, ss=1)
+            .output(thumbnail_full_path, vframes=1)
+            .run(capture_stdout=True, capture_stderr=True, overwrite_output=True)
+        )
+        relative_thumbnail_path = os.path.join('uploads', 'thumbnails', unique_thumbnail_name)
 
         # 3. Get File Size
         size_in_bytes = os.path.getsize(video_full_path)
@@ -1423,7 +1429,8 @@ def upload_video():
         # Clean up the saved video file if processing fails
         if os.path.exists(video_full_path):
             os.remove(video_full_path)
-        flash(f'An error occurred during video processing: {e}', 'danger')
+        print(f"FFmpeg Error: {e}") # Log the actual error for debugging
+        flash(f'An error occurred during video processing. Please ensure FFmpeg is installed and the video format is supported.', 'danger')
         return redirect(url_for('videos'))
 
     new_video = Video(
@@ -1441,6 +1448,7 @@ def upload_video():
     db.session.commit()
     flash('Video uploaded and processed successfully!', 'success')
     return redirect(url_for('videos'))
+
 
 @app.route('/videos/delete/<int:video_id>', methods=['POST'])
 def delete_video(video_id):
@@ -1471,7 +1479,6 @@ def get_video_data(video_id):
     }
 
 # --- VIDEOS SECTION END ---
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
