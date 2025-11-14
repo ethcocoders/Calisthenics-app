@@ -3,6 +3,5 @@ Flask-SQLAlchemy
 Flask-Migrate
 SQLAlchemy
 Werkzeug
-moviepy
 gunicorn
 ffmpeg-python
