@@ -1,0 +1,46 @@
+/* Modern Responsivity for Calisthenics App */
+
+/* Add a transition for a smooth effect */
+.sidebar {
+    transition: width 0.3s ease;
+}
+
+.sidebar .nav-links li span {
+    transition: opacity 0.3s ease;
+}
+
+/* On smaller screens, collapse the sidebar */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 80px;
+        overflow: hidden;
+    }
+
+    .sidebar:hover {
+        width: 250px;
+    }
+
+    .sidebar .logo h2 span {
+        display: none;
+    }
+
+    .sidebar .nav-links li span {
+        display: none;
+        opacity: 0;
+    }
+
+    .sidebar:hover .logo h2 span,
+    .sidebar:hover .nav-links li span {
+        display: inline;
+        opacity: 1;
+    }
+
+    .main-content {
+        margin-left: 80px;
+        transition: margin-left 0.3s ease;
+    }
+
+    .sidebar:hover ~ .main-content {
+        margin-left: 250px;
+    }
+}
