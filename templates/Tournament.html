@@ -11,14 +11,12 @@
 <body>
     <div class="container">
         {% include '_sidebar.html' %}
-
         <div class="main-content">
             <div class="header">
                 <h1>Tournament</h1>
                 <div class="header-actions">
-                    <!-- NEW: Create Challenge Button -->
-                    <button id="createChallengeBtn" style="background: var(--accent); color: var(--dark); border-color: var(--accent);"><i class="fas fa-plus"></i> Create Challenge</button>
-                    <button id="joinTournamentBtn"><i class="fas fa-trophy"></i> Join Tournament</button>
+                    <button id="createChallengeBtn" class="header-btn accent"><i class="fas fa-plus"></i> Create Challenge</button>
+                    <button id="joinTournamentBtn" class="header-btn primary"><i class="fas fa-trophy"></i> Join Tournament</button>
                 </div>
             </div>
             {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
@@ -34,7 +32,11 @@
                         <div class="challenge-item">
                             <div class="challenge-icon tier-{{ uc.challenge.level_requirement // 10 }}"><i class="fas fa-medal"></i></div>
                             <div class="challenge-details">
-                                <div class="challenge-title">{{ uc.challenge.title }} {% if uc.challenge.is_user_created %}<i class="fas fa-user-edit" title="User-Created"></i>{% endif %}</div>
+                                <div class="challenge-title">
+                                    {{ uc.challenge.title }} 
+                                    {% if uc.challenge.is_user_created %}<i class="fas fa-user-edit" title="User-Created"></i>{% endif %}
+                                    {% if uc.challenge.is_milestone_challenge %}<i class="fas fa-star" title="Milestone Challenge" style="color: {{ uc.challenge.badge_to_award.color }};"></i>{% endif %}
+                                </div>
                                 <div class="challenge-task">{{ uc.challenge.task_details }}</div>
                             </div>
                             <div class="challenge-reward">{{ uc.challenge.xp_reward }} XP</div>
@@ -42,16 +44,19 @@
                                 {% if uc.status == 'completed' %}
                                     <button class="challenge-btn completed" disabled><i class="fas fa-check-circle"></i> Completed</button>
                                 {% elif uc.status == 'active' %}
-                                    <form action="{{ url_for('complete_challenge', user_challenge_id=uc.id) }}" method="POST"><button type="submit" class="challenge-btn complete">Submit Result</button></form>
+                                    <!-- This button now correctly triggers the modal, not a form -->
+                                    <button class="challenge-btn complete honesty-pledge" data-challenge-id="{{ uc.id }}">Submit Result</button>
                                 {% else %} {# 'locked' or 'unlocked' #}
                                     {% if profile.level >= uc.challenge.level_requirement %}
-                                        <form action="{{ url_for('start_challenge', user_challenge_id=uc.id) }}" method="POST"><button type="submit" class="challenge-btn start">Start Challenge</button></form>
+                                        <!-- CORRECTED FORM ACTION -->
+                                        <form action="{{ url_for('start_challenge', user_challenge_id=uc.id) }}" method="POST">
+                                            <button type="submit" class="challenge-btn start">Start Challenge</button>
+                                        </form>
                                     {% else %}
                                         <button class="challenge-btn locked" disabled>Requires Lvl {{ uc.challenge.level_requirement }}</button>
                                     {% endif %}
                                 {% endif %}
                             </div>
-                            <!-- NEW: Edit/Delete buttons for user's own challenges -->
                             {% if uc.challenge.is_user_created and uc.challenge.user_id == profile.id %}
                             <div class="user-challenge-actions">
                                 <a href="{{ url_for('edit_challenge', challenge_id=uc.challenge.id) }}" class="item-action-btn"><i class="fas fa-edit"></i></a>
@@ -65,35 +70,37 @@
                     </div>
                 </div>
 
-                <div class="tournament-card visualizations">...</div> <!-- Unchanged for this part -->
+                <div class="tournament-card badges">
+                    <div class="card-header"><h2 class="card-title">Achievement Catalogue</h2></div>
+                    <div class="badge-list">
+                        {% for user_badge in earned_badges %}
+                        <div class="badge-item" title="{{ user_badge.badge.description }}">
+                            <div class="badge-icon" style="border-color: {{ user_badge.badge.color }};">
+                                <i class="fas {{ user_badge.badge.icon }}" style="color: {{ user_badge.badge.color }};"></i>
+                            </div>
+                            <div class="badge-name">{{ user_badge.badge.name }}</div>
+                        </div>
+                        {% else %}
+                        <p style="color: var(--text-secondary); grid-column: 1 / -1;">Complete Milestone Challenges to earn badges!</p>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Join Tournament Modal (Unchanged) -->
-        <div class="join-tournament-modal" id="joinTournamentModal">...</div>
-
-        <!-- NEW: Create Challenge Modal -->
+        <!-- Modals -->
+        <div class="join-tournament-modal" id="joinTournamentModal">
+            <div class="modal-content"><div class="modal-header"><h3 class="modal-title">Join Tournament</h3><button class="close-modal">&times;</button></div><div class="tournament-details"><p>Next Tournament: <strong>Regional Push-up Championship</strong></p><p>Date: <strong>November 30, 2025</strong></p><p>Required Level: <strong>25</strong></p><p>Your Level: <strong>{{ profile.level }}</strong> {% if profile.level >= 25 %}(Eligible){% else %}(Not Eligible){% endif %}</p></div><div class="modal-buttons"><button class="modal-btn cancel">Cancel</button><button class="modal-btn save">Join Tournament</button></div></div>
+        </div>
         <div class="join-tournament-modal" id="createChallengeModal">
-            <div class="modal-content">
-                <div class="modal-header"><h3 class="modal-title">Create Custom Challenge</h3><button class="close-modal">&times;</button></div>
-                <form action="{{ url_for('create_challenge') }}" method="POST" class="modal-form">
-                    <div class="form-grid">
-                        <div class="form-group full-width"><label>Title</label><input type="text" name="title" required></div>
-                        <div class="form-group full-width"><label>Task Details</label><input type="text" name="task_details" placeholder="e.g., 'Complete 20 Diamond Push-ups'" required></div>
-                        <div class="form-group"><label>Level Requirement</label><input type="number" name="level_requirement" value="{{ profile.level }}" min="1" required></div>
-                        <div class="form-group"><label>XP Reward</label><input type="number" name="xp_reward" value="100" min="10" step="5" required></div>
-                    </div>
-                    <div class="modal-buttons">
-                        <button type="button" class="modal-btn cancel">Cancel</button>
-                        <button type="submit" class="modal-btn save">Create Challenge</button>
-                    </div>
-                </form>
-            </div>
+            <div class="modal-content"><div class="modal-header"><h3 class="modal-title">Create Custom Challenge</h3><button class="close-modal">&times;</button></div><form action="{{ url_for('create_challenge') }}" method="POST" class="modal-form"><div class="form-grid"><div class="form-group full-width"><label>Title</label><input type="text" name="title" required></div><div class="form-group full-width"><label>Task Details</label><input type="text" name="task_details" placeholder="e.g., 'Complete 20 Diamond Push-ups'" required></div><div class="form-group"><label>Level Requirement</label><input type="number" name="level_requirement" value="{{ profile.level }}" min="1" required></div><div class="form-group"><label>XP Reward</label><input type="number" name="xp_reward" value="100" min="10" step="5" required></div></div><div class="modal-buttons"><button type="button" class="modal-btn cancel">Cancel</button><button type="submit" class="modal-btn save">Create Challenge</button></div></form></div>
+        </div>
+        <div class="join-tournament-modal" id="honestyPledgeModal">
+            <div class="modal-content"><div class="modal-header"><h3 class="modal-title">Confirm Challenge Completion</h3><button class="close-modal">&times;</button></div><div class="tournament-details"><p>This is a self-assigned application designed to build discipline and honesty.</p><p>By clicking "Finish", you are confirming that you have completed the challenge to the best of your ability.</p><div style="margin-top: 20px; display: flex; align-items: center;"><input type="checkbox" id="honestyCheckbox" style="width: 20px; height: 20px; margin-right: 10px;"><label for="honestyCheckbox">I am finishing honestly.</label></div></div><div class="modal-buttons"><button type="button" class="modal-btn cancel">Cancel</button><form id="completeChallengeForm" method="POST" style="margin: 0;"><button id="finalCompleteBtn" type="submit" class="modal-btn save" disabled>Finish</button></form></div></div>
         </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Generic Modal Logic
             function setupModal(triggerId, modalId) {
                 const modal = document.getElementById(modalId);
                 if (!modal) return;
@@ -104,7 +111,27 @@
                 modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
             }
             setupModal('joinTournamentBtn', 'joinTournamentModal');
-            setupModal('createChallengeBtn', 'createChallengeModal'); // Setup new modal
+            setupModal('createChallengeBtn', 'createChallengeModal');
+
+            const pledgeModal = document.getElementById('honestyPledgeModal');
+            const pledgeCheckbox = document.getElementById('honestyCheckbox');
+            const finalCompleteBtn = document.getElementById('finalCompleteBtn');
+            const completeChallengeForm = document.getElementById('completeChallengeForm');
+
+            document.querySelectorAll('.honesty-pledge').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault(); 
+                    const userChallengeId = this.dataset.challengeId;
+                    completeChallengeForm.action = `/challenges/complete/${userChallengeId}`;
+                    pledgeCheckbox.checked = false;
+                    finalCompleteBtn.disabled = true;
+                    pledgeModal.style.display = 'flex';
+                });
+            });
+            pledgeCheckbox.addEventListener('change', function() {
+                finalCompleteBtn.disabled = !this.checked;
+            });
+             setupModal(null, 'honestyPledgeModal');
         });
     </script>
 </body>

@@ -31,20 +31,13 @@ app.config['MOTIVATION_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'upload
 if not os.path.exists(app.config['MOTIVATION_UPLOAD_FOLDER']):
     os.makedirs(app.config['MOTIVATION_UPLOAD_FOLDER'])
 
-app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'videos')
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB limit
-
-# --- Make sure the video upload folder exists ---
-if not os.path.exists(app.config['VIDEO_UPLOAD_FOLDER']):
-    os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'])
-
 
 # --- Initialize Extensions ---
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# ---  UserProfile MODEL ---
 
+# --- Define Database Model ---
 class UserProfile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     height = db.Column(db.Float, nullable=True) # in cm
@@ -60,11 +53,8 @@ class UserProfile(db.Model):
     
     motivation_items = db.relationship('MotivationItem', backref='user', lazy='dynamic')
 
-    videos = db.relationship('Video', backref='user', lazy='dynamic')
-
     def __repr__(self):
         return f'<UserProfile {self.id}>'
-
 
 # --- Define HealthRecord Model ---
 class HealthRecord(db.Model):
@@ -256,18 +246,17 @@ class UserBadge(db.Model):
     def __repr__(self):
         return f'<UserBadge User {self.user_id} earned {self.badge.name}>'
 
-# --- REPLACE THE Video MODEL WITH THIS UPDATED VERSION ---
+# --- ADD THIS CODE AFTER THE MotivationItem MODEL ---
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    category = db.Column(db.String(50), nullable=False)
+    category = db.Column(db.String(50), nullable=False) # 'tutorial', 'workout', etc.
     
     file_path = db.Column(db.String(300), nullable=False)
-    thumbnail_path = db.Column(db.String(300), nullable=True)
+    thumbnail_path = db.Column(db.String(300), nullable=True) # Optional: for custom/generated thumbnails
     duration = db.Column(db.String(20), nullable=True) # e.g., "12:45"
-    size_mb = db.Column(db.Float, nullable=True) # NEW: To store file size in MB
     
     upload_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     views = db.Column(db.Integer, default=0)
@@ -1328,168 +1317,10 @@ def toggle_motivation_favorite(item_id):
 
 # --- MOTIVATION SECTION END ---
 
-# --- ADD THIS CODE TO app.py ---
-
-# --- Add this configuration line with the other app.config settings ---
-app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'videos')
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB limit
-
-# --- Make sure the video upload folder exists ---
-if not os.path.exists(app.config['VIDEO_UPLOAD_FOLDER']):
-    os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'])
-
-# --- REPLACE THE ENTIRE 'VIDEOS SECTION START' to 'VIDEOS SECTION END' BLOCK ---
-
-# --- Add these new imports at the top of your app.py ---
-from moviepy.editor import VideoFileClip
-
-# --- Helper function to format seconds into MM:SS or HH:MM:SS ---
-def format_duration(seconds):
-    seconds = int(seconds)
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    if hours > 0:
-        return f"{hours:02}:{minutes:02}:{seconds:02}"
-    else:
-        return f"{minutes:02}:{seconds:02}"
-
-# --- Add this configuration line for thumbnails ---
-app.config['THUMBNAIL_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'thumbnails')
-
-# --- Make sure the thumbnail upload folder exists ---
-if not os.path.exists(app.config['THUMBNAIL_UPLOAD_FOLDER']):
-    os.makedirs(app.config['THUMBNAIL_UPLOAD_FOLDER'])
-
-
-# --- VIDEOS SECTION START ---
-
 @app.route('/videos')
 def videos():
-    user = UserProfile.query.first()
-    if not user:
-        flash("User profile not found.", 'danger')
-        return redirect(url_for('index'))
+    return render_template('videos.html', active_page='videos')
 
-    category_filter = request.args.get('category', 'all')
-    
-    query = Video.query.filter_by(user_id=user.id)
-    
-    if category_filter != 'all':
-        query = query.filter_by(category=category_filter)
-        
-    all_videos = query.order_by(Video.upload_date.desc()).all()
-    
-    all_categories = db.session.query(Video.category).filter_by(user_id=user.id).distinct().all()
-    categories = [cat[0] for cat in all_categories]
-    
-    return render_template(
-        'videos.html', 
-        active_page='videos',
-        videos=all_videos,
-        categories=categories,
-        active_category=category_filter
-    )
-
-@app.route('/videos/upload', methods=['POST'])
-def upload_video():
-    user = UserProfile.query.first()
-    if not user:
-        flash('User profile not found.', 'danger')
-        return redirect(url_for('videos'))
-
-    title = request.form.get('title')
-    category = request.form.get('category')
-    description = request.form.get('description')
-    file = request.files.get('video_file')
-
-    if not all([title, category, file]):
-        flash('Title, Category, and a video file are required.', 'danger')
-        return redirect(url_for('videos'))
-
-    if file.filename == '':
-        flash('No selected file.', 'danger')
-        return redirect(url_for('videos'))
-
-    filename = secure_filename(file.filename)
-    unique_filename = f"{uuid.uuid4().hex}_{filename}"
-    video_full_path = os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], unique_filename)
-    
-    try:
-        file.save(video_full_path)
-
-        # --- Video Processing using MoviePy ---
-        duration_str = None
-        size_in_mb = None
-        relative_thumbnail_path = None
-
-        with VideoFileClip(video_full_path) as clip:
-            # 1. Get Duration
-            duration_in_seconds = clip.duration
-            duration_str = format_duration(duration_in_seconds)
-
-            # 2. Generate Thumbnail (at the 1-second mark)
-            unique_thumbnail_name = f"{os.path.splitext(unique_filename)[0]}.jpg"
-            thumbnail_full_path = os.path.join(app.config['THUMBNAIL_UPLOAD_FOLDER'], unique_thumbnail_name)
-            clip.save_frame(thumbnail_full_path, t=1)
-            relative_thumbnail_path = os.path.join('uploads', 'thumbnails', unique_thumbnail_name)
-
-        # 3. Get File Size
-        size_in_bytes = os.path.getsize(video_full_path)
-        size_in_mb = round(size_in_bytes / (1024 * 1024), 2)
-
-    except Exception as e:
-        # Clean up the saved video file if processing fails
-        if os.path.exists(video_full_path):
-            os.remove(video_full_path)
-        flash(f'An error occurred during video processing: {e}', 'danger')
-        return redirect(url_for('videos'))
-
-    new_video = Video(
-        title=title,
-        category=category,
-        description=description,
-        file_path=os.path.join('uploads', 'videos', unique_filename),
-        thumbnail_path=relative_thumbnail_path,
-        duration=duration_str,
-        size_mb=size_in_mb,
-        user_id=user.id
-    )
-
-    db.session.add(new_video)
-    db.session.commit()
-    flash('Video uploaded and processed successfully!', 'success')
-    return redirect(url_for('videos'))
-
-@app.route('/videos/delete/<int:video_id>', methods=['POST'])
-def delete_video(video_id):
-    video_to_delete = Video.query.get_or_404(video_id)
-
-    # Delete the video and thumbnail files
-    for file_path in [video_to_delete.file_path, video_to_delete.thumbnail_path]:
-        if file_path:
-            try:
-                full_path = os.path.join('static', file_path)
-                if os.path.exists(full_path):
-                    os.remove(full_path)
-            except Exception as e:
-                print(f"Error deleting file {file_path}: {e}")
-
-    db.session.delete(video_to_delete)
-    db.session.commit()
-    flash('Video deleted successfully.', 'success')
-    return redirect(url_for('videos'))
-
-@app.route('/videos/data/<int:video_id>')
-def get_video_data(video_id):
-    video = Video.query.get_or_404(video_id)
-    return {
-        'title': video.title,
-        'description': video.description,
-        'file_url': url_for('static', filename=video.file_path)
-    }
-
-# --- VIDEOS SECTION END ---
 
 # --- Run the Application ---
 if __name__ == "__main__":

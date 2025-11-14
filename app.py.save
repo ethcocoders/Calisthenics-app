@@ -5,8 +5,6 @@ from flask import Flask, render_template, request, redirect, url_for, flash, Res
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from flask_migrate import Migrate
-from werkzeug.utils import secure_filename
-import uuid
 
 # Get the base directory of the project
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -20,31 +18,15 @@ app.config['SECRET_KEY'] = 'a-very-secret-key-that-should-be-changed'
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'calisthenics.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'goals')
-
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
-app.config['MOTIVATION_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'motivation')
-
-# --- Make sure the motivation upload folder exists ---
-if not os.path.exists(app.config['MOTIVATION_UPLOAD_FOLDER']):
-    os.makedirs(app.config['MOTIVATION_UPLOAD_FOLDER'])
-
-app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'videos')
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB limit
-
-# --- Make sure the video upload folder exists ---
-if not os.path.exists(app.config['VIDEO_UPLOAD_FOLDER']):
-    os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'])
-
 
 # --- Initialize Extensions ---
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# ---  UserProfile MODEL ---
 
+# --- Define Database Model ---
+
+# --- Define UserProfile Model ---
 class UserProfile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     height = db.Column(db.Float, nullable=True) # in cm
@@ -55,16 +37,9 @@ class UserProfile(db.Model):
     
     # Relationship to access challenges created by this user
     created_challenges = db.relationship('Challenge', backref='creator', lazy='dynamic')
-    
-    goals = db.relationship('Goal', backref='user', lazy='dynamic')
-    
-    motivation_items = db.relationship('MotivationItem', backref='user', lazy='dynamic')
-
-    videos = db.relationship('Video', backref='user', lazy='dynamic')
 
     def __repr__(self):
         return f'<UserProfile {self.id}>'
-
 
 # --- Define HealthRecord Model ---
 class HealthRecord(db.Model):
@@ -76,6 +51,16 @@ class HealthRecord(db.Model):
 
     def __repr__(self):
         return f'<HealthRecord {self.date}>'
+
+# --- Define HealthPlanItem Model ---
+class HealthPlanItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), nullable=False, default='pending') # 'pending' or 'completed'
+
+    def __repr__(self):
+        return f'<HealthPlanItem {self.title}>'
 
 class Workout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -135,68 +120,6 @@ class StickyNote(db.Model):
     def __repr__(self):
         return f'<StickyNote {self.title}>'
 
-# --- ADD THIS CODE TO app.py ---
-
-# --- Define HealthPlanItem Model ---
-class HealthPlanItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    status = db.Column(db.String(50), nullable=False, default='pending') # 'pending' or 'completed'
-
-    def __repr__(self):
-        return f'<HealthPlanItem {self.title}>'
-
-# --- NEW GOAL MODELS START HERE ---
-
-class Goal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    status = db.Column(db.String(50), nullable=False, default='pending') # 'pending', 'in_progress', 'completed'
-    target_date = db.Column(db.Date, nullable=False)
-    completed_date = db.Column(db.DateTime, nullable=True)
-    
-    current_progress = db.Column(db.Float, nullable=False, default=0)
-    target_progress = db.Column(db.Float, nullable=False, default=100)
-    progress_unit = db.Column(db.String(50), nullable=True) # e.g., 'reps', 'seconds', '%'
-
-    notes = db.Column(db.Text, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user_profile.id'), nullable=True)
-
-    media = db.relationship('GoalMedia', backref='goal', lazy='dynamic', cascade="all, delete-orphan")
-
-    def __repr__(self):
-        return f'<Goal {self.title}>'
-
-class GoalMedia(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goal.id'), nullable=False)
-    file_path = db.Column(db.String(300), nullable=False)
-    media_type = db.Column(db.String(50), nullable=False) # 'image' or 'video'
-    upload_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    # For the Before/After gallery feature
-    is_before_photo = db.Column(db.Boolean, default=False)
-    is_after_photo = db.Column(db.Boolean, default=False)
-
-    def __repr__(self):
-        return f'<GoalMedia {self.file_path} for Goal {self.goal_id}>'
-
-class MotivationItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    category = db.Column(db.String(50), nullable=False) # 'video', 'book', 'quote', etc.
-    author = db.Column(db.String(150), nullable=True)
-    source_url = db.Column(db.String(500), nullable=True)
-    cover_image_path = db.Column(db.String(300), nullable=True)
-    is_favorite = db.Column(db.Boolean, default=False, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user_profile.id'), nullable=True)
-
-    def __repr__(self):
-        return f'<MotivationItem {self.title}>'
-
 # --- Define Challenge Model ---
 class Challenge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -236,9 +159,13 @@ class Badge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    icon = db.Column(db.String(50), nullable=False, default='fa-shield-alt') # e.g., fa-shield-alt, fa-trophy
-    color = db.Column(db.String(50), nullable=False, default='#c0c0c0') # e.g., Hex color code
-    challenges_required = db.Column(db.Integer, nullable=False, default=1)
+    icon = db.Column(db.String(50), nullable=False, default='fa-shield-alt')
+    color = db.Column(db.String(50), nullable=False, default='#c0c0c0')
+    
+    # NEW: Column to distinguish badge types
+    type = db.Column(db.String(50), nullable=False, default='achievement') # 'achievement' or 'milestone'
+    
+    challenges_required = db.Column(db.Integer, unique=True, nullable=True) # Nullable for milestone badges
 
     def __repr__(self):
         return f'<Badge {self.name}>'
@@ -255,28 +182,6 @@ class UserBadge(db.Model):
 
     def __repr__(self):
         return f'<UserBadge User {self.user_id} earned {self.badge.name}>'
-
-# --- REPLACE THE Video MODEL WITH THIS UPDATED VERSION ---
-
-class Video(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    category = db.Column(db.String(50), nullable=False)
-    
-    file_path = db.Column(db.String(300), nullable=False)
-    thumbnail_path = db.Column(db.String(300), nullable=True)
-    duration = db.Column(db.String(20), nullable=True) # e.g., "12:45"
-    size_mb = db.Column(db.Float, nullable=True) # NEW: To store file size in MB
-    
-    upload_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    views = db.Column(db.Integer, default=0)
-    likes = db.Column(db.Integer, default=0)
-    
-    user_id = db.Column(db.Integer, db.ForeignKey('user_profile.id'), nullable=True)
-
-    def __repr__(self):
-        return f'<Video {self.title}>'
 
 # --- Main Application Routes ---
 
@@ -332,16 +237,6 @@ def delete_workout(workout_id):
     flash('Workout deleted successfully.', 'success')
     return redirect(url_for('workouts'))
 
-# --- ADD THIS CODE TO app.py ---
-
-# --- Add these new models to the 'from app import' line if you created a separate seed file ---
-# (This is just a reminder, no code change needed if your models are in app.py)
-# from app import ..., Goal, GoalMedia
-
-# --- Make sure the upload folder exists ---
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
 
 # --- Placeholder Routes for Other Pages ---
 
@@ -349,128 +244,11 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 def dashboard():
     return render_template('dashboard.html', active_page='index')
 
-# --- GOALS SECTION START ---
-
 @app.route('/goals')
 def goals():
-    # 1. Fetch user and all their goals
-    user = UserProfile.query.first()
-    if not user:
-        # Handle case where no user exists
-        return redirect(url_for('index')) # Or some setup page
+    return render_template('Goals.html', active_page='goals')
 
-    all_goals = Goal.query.filter_by(user_id=user.id).order_by(Goal.target_date.asc()).all()
-
-    # 2. Calculate overview statistics
-    total_goals = len(all_goals)
-    completed_goals = Goal.query.filter_by(user_id=user.id, status='completed').count()
-    completion_percentage = round((completed_goals / total_goals) * 100) if total_goals > 0 else 0
-
-    # 3. Fetch Before/After gallery photos
-    before_photo_media = GoalMedia.query.filter_by(is_before_photo=True).join(Goal).filter(Goal.user_id == user.id).first()
-    after_photo_media = GoalMedia.query.filter_by(is_after_photo=True).join(Goal).filter(Goal.user_id == user.id).first()
-    
-    # 4. Pass data to the template
-    return render_template(
-        'Goals.html',
-        active_page='goals',
-        all_goals=all_goals,
-        total_goals=total_goals,
-        completed_goals=completed_goals,
-        completion_percentage=completion_percentage,
-        before_photo=before_photo_media,
-        after_photo=after_photo_media
-    )
-
-@app.route('/goals/add', methods=['POST'])
-def add_goal():
-    user = UserProfile.query.first()
-    if not user:
-        flash('User profile not found.', 'danger')
-        return redirect(url_for('goals'))
-
-    title = request.form.get('title')
-    description = request.form.get('description')
-    target_date_str = request.form.get('target_date')
-    notes = request.form.get('notes')
-    
-    if not all([title, target_date_str]):
-        flash('Goal Title and Target Date are required.', 'danger')
-        return redirect(url_for('goals'))
-
-    target_date = datetime.strptime(target_date_str, '%Y-%m-%d').date()
-
-    new_goal = Goal(
-        title=title,
-        description=description,
-        target_date=target_date,
-        notes=notes,
-        status='pending',
-        user_id=user.id
-    )
-    db.session.add(new_goal)
-    db.session.flush() # To get the new_goal.id for media linking
-
-    # Handle file uploads
-    files = request.files.getlist('media_files[]')
-    for file in files:
-        if file and file.filename != '':
-            filename = secure_filename(file.filename)
-            unique_filename = f"{uuid.uuid4().hex}_{filename}"
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            file.save(file_path)
-            
-            media_type = 'image' if file.mimetype.startswith('image/') else 'video'
-            
-            # Note: For a real app, logic to set is_before/is_after would be needed here
-            new_media = GoalMedia(
-                goal_id=new_goal.id,
-                file_path=os.path.join('uploads', 'goals', unique_filename), # Store relative path for URL
-                media_type=media_type
-            )
-            db.session.add(new_media)
-
-    db.session.commit()
-    flash('New goal created successfully!', 'success')
-    return redirect(url_for('goals'))
-
-@app.route('/goals/delete/<int:goal_id>', methods=['POST'])
-def delete_goal(goal_id):
-    goal_to_delete = Goal.query.get_or_404(goal_id)
-
-    # Delete associated media files from the server
-    for media in goal_to_delete.media:
-        try:
-            # Construct the full path to the file
-            full_path = os.path.join('static', media.file_path)
-            if os.path.exists(full_path):
-                os.remove(full_path)
-        except Exception as e:
-            print(f"Error deleting file {media.file_path}: {e}") # Log error
-
-    db.session.delete(goal_to_delete)
-    db.session.commit()
-    flash('Goal deleted successfully.', 'success')
-    return redirect(url_for('goals'))
-
-@app.route('/goals/toggle_status/<int:goal_id>', methods=['POST'])
-def toggle_goal_status(goal_id):
-    goal = Goal.query.get_or_404(goal_id)
-    
-    if goal.status == 'completed':
-        goal.status = 'in_progress'
-        goal.completed_date = None
-        flash(f'Goal "{goal.title}" marked as in-progress.', 'info')
-    else:
-        goal.status = 'completed'
-        goal.current_progress = goal.target_progress # Auto-complete progress
-        goal.completed_date = datetime.utcnow()
-        flash(f'Congratulations on completing "{goal.title}"!', 'success')
-        
-    db.session.commit()
-    return redirect(url_for('goals'))
-
-# --- GOALS SECTION END ---
+#________Plan section_________
 
 @app.route('/plan')
 def plan():
@@ -986,6 +764,9 @@ def edit_health_record(record_id):
 
 #________________________________________________
 
+@app.route('/motivation')
+def motivation():
+    return render_template('Motivation.html', active_page='motivation')
 
 # Helper function to define the XP required for each level (can be placed above the routes)
 def xp_for_level(level):
@@ -1212,284 +993,10 @@ def delete_challenge(challenge_id):
 
 #-----------------------------------------------
 
-# --- ADD THIS CODE TO app.py ---
-
-# --- Add this configuration line with the other app.config settings ---
-# This line creates a dedicated upload folder for motivation content
-app.config['MOTIVATION_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'motivation')
-
-# --- Make sure the motivation upload folder exists ---
-if not os.path.exists(app.config['MOTIVATION_UPLOAD_FOLDER']):
-    os.makedirs(app.config['MOTIVATION_UPLOAD_FOLDER'])
-
-
-# --- MOTIVATION SECTION START ---
-
-@app.route('/motivation')
-def motivation():
-    user = UserProfile.query.first()
-    if not user:
-        flash("User profile not found. Please initialize the application.", 'danger')
-        return redirect(url_for('index'))
-
-    # Handle category filtering
-    category_filter = request.args.get('category', 'all')
-    
-    query = MotivationItem.query.filter_by(user_id=user.id)
-    
-    if category_filter != 'all':
-        query = query.filter_by(category=category_filter)
-        
-    all_items = query.order_by(MotivationItem.is_favorite.desc(), MotivationItem.id.desc()).all()
-    
-    # Get all unique categories for the filter buttons
-    all_categories = db.session.query(MotivationItem.category).filter_by(user_id=user.id).distinct().all()
-    categories = [cat[0] for cat in all_categories]
-    
-    return render_template(
-        'Motivation.html', 
-        active_page='motivation',
-        motivation_items=all_items,
-        categories=categories,
-        active_category=category_filter
-    )
-
-@app.route('/motivation/add', methods=['POST'])
-def add_motivation_item():
-    user = UserProfile.query.first()
-    if not user:
-        flash('User profile not found.', 'danger')
-        return redirect(url_for('motivation'))
-
-    title = request.form.get('title')
-    category = request.form.get('category')
-    description = request.form.get('description')
-    author = request.form.get('author')
-    source_url = request.form.get('source_url')
-
-    if not all([title, category]):
-        flash('Title and Category are required.', 'danger')
-        return redirect(url_for('motivation'))
-
-    new_item = MotivationItem(
-        title=title,
-        category=category,
-        description=description,
-        author=author,
-        source_url=source_url,
-        user_id=user.id
-    )
-
-    # Handle file upload
-    file = request.files.get('cover_image')
-    if file and file.filename != '':
-        filename = secure_filename(file.filename)
-        unique_filename = f"{uuid.uuid4().hex}_{filename}"
-        file_path = os.path.join(app.config['MOTIVATION_UPLOAD_FOLDER'], unique_filename)
-        file.save(file_path)
-        # Store the relative path for use in url_for()
-        new_item.cover_image_path = os.path.join('uploads', 'motivation', unique_filename)
-
-    db.session.add(new_item)
-    db.session.commit()
-    flash('New motivational content added!', 'success')
-    return redirect(url_for('motivation'))
-
-@app.route('/motivation/delete/<int:item_id>', methods=['POST'])
-def delete_motivation_item(item_id):
-    item_to_delete = MotivationItem.query.get_or_404(item_id)
-
-    # Delete associated image file from the server if it exists
-    if item_to_delete.cover_image_path:
-        try:
-            full_path = os.path.join('static', item_to_delete.cover_image_path)
-            if os.path.exists(full_path):
-                os.remove(full_path)
-        except Exception as e:
-            print(f"Error deleting file {item_to_delete.cover_image_path}: {e}")
-
-    db.session.delete(item_to_delete)
-    db.session.commit()
-    flash('Motivational item deleted.', 'success')
-    return redirect(url_for('motivation'))
-
-@app.route('/motivation/toggle_favorite/<int:item_id>', methods=['POST'])
-def toggle_motivation_favorite(item_id):
-    item = MotivationItem.query.get_or_404(item_id)
-    item.is_favorite = not item.is_favorite
-    db.session.commit()
-    
-    if item.is_favorite:
-        flash(f'"{item.title}" added to favorites.', 'success')
-    else:
-        flash(f'"{item.title}" removed from favorites.', 'info')
-        
-    return redirect(request.referrer or url_for('motivation'))
-
-# --- MOTIVATION SECTION END ---
-
-# --- ADD THIS CODE TO app.py ---
-
-# --- Add this configuration line with the other app.config settings ---
-app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'videos')
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB limit
-
-# --- Make sure the video upload folder exists ---
-if not os.path.exists(app.config['VIDEO_UPLOAD_FOLDER']):
-    os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'])
-
-# --- REPLACE THE ENTIRE 'VIDEOS SECTION START' to 'VIDEOS SECTION END' BLOCK ---
-
-# --- Add these new imports at the top of your app.py ---
-from moviepy.editor import VideoFileClip
-
-# --- Helper function to format seconds into MM:SS or HH:MM:SS ---
-def format_duration(seconds):
-    seconds = int(seconds)
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    if hours > 0:
-        return f"{hours:02}:{minutes:02}:{seconds:02}"
-    else:
-        return f"{minutes:02}:{seconds:02}"
-
-# --- Add this configuration line for thumbnails ---
-app.config['THUMBNAIL_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'thumbnails')
-
-# --- Make sure the thumbnail upload folder exists ---
-if not os.path.exists(app.config['THUMBNAIL_UPLOAD_FOLDER']):
-    os.makedirs(app.config['THUMBNAIL_UPLOAD_FOLDER'])
-
-
-# --- VIDEOS SECTION START ---
-
 @app.route('/videos')
 def videos():
-    user = UserProfile.query.first()
-    if not user:
-        flash("User profile not found.", 'danger')
-        return redirect(url_for('index'))
+    return render_template('videos.html', active_page='videos')
 
-    category_filter = request.args.get('category', 'all')
-    
-    query = Video.query.filter_by(user_id=user.id)
-    
-    if category_filter != 'all':
-        query = query.filter_by(category=category_filter)
-        
-    all_videos = query.order_by(Video.upload_date.desc()).all()
-    
-    all_categories = db.session.query(Video.category).filter_by(user_id=user.id).distinct().all()
-    categories = [cat[0] for cat in all_categories]
-    
-    return render_template(
-        'videos.html', 
-        active_page='videos',
-        videos=all_videos,
-        categories=categories,
-        active_category=category_filter
-    )
-
-@app.route('/videos/upload', methods=['POST'])
-def upload_video():
-    user = UserProfile.query.first()
-    if not user:
-        flash('User profile not found.', 'danger')
-        return redirect(url_for('videos'))
-
-    title = request.form.get('title')
-    category = request.form.get('category')
-    description = request.form.get('description')
-    file = request.files.get('video_file')
-
-    if not all([title, category, file]):
-        flash('Title, Category, and a video file are required.', 'danger')
-        return redirect(url_for('videos'))
-
-    if file.filename == '':
-        flash('No selected file.', 'danger')
-        return redirect(url_for('videos'))
-
-    filename = secure_filename(file.filename)
-    unique_filename = f"{uuid.uuid4().hex}_{filename}"
-    video_full_path = os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], unique_filename)
-    
-    try:
-        file.save(video_full_path)
-
-        # --- Video Processing using MoviePy ---
-        duration_str = None
-        size_in_mb = None
-        relative_thumbnail_path = None
-
-        with VideoFileClip(video_full_path) as clip:
-            # 1. Get Duration
-            duration_in_seconds = clip.duration
-            duration_str = format_duration(duration_in_seconds)
-
-            # 2. Generate Thumbnail (at the 1-second mark)
-            unique_thumbnail_name = f"{os.path.splitext(unique_filename)[0]}.jpg"
-            thumbnail_full_path = os.path.join(app.config['THUMBNAIL_UPLOAD_FOLDER'], unique_thumbnail_name)
-            clip.save_frame(thumbnail_full_path, t=1)
-            relative_thumbnail_path = os.path.join('uploads', 'thumbnails', unique_thumbnail_name)
-
-        # 3. Get File Size
-        size_in_bytes = os.path.getsize(video_full_path)
-        size_in_mb = round(size_in_bytes / (1024 * 1024), 2)
-
-    except Exception as e:
-        # Clean up the saved video file if processing fails
-        if os.path.exists(video_full_path):
-            os.remove(video_full_path)
-        flash(f'An error occurred during video processing: {e}', 'danger')
-        return redirect(url_for('videos'))
-
-    new_video = Video(
-        title=title,
-        category=category,
-        description=description,
-        file_path=os.path.join('uploads', 'videos', unique_filename),
-        thumbnail_path=relative_thumbnail_path,
-        duration=duration_str,
-        size_mb=size_in_mb,
-        user_id=user.id
-    )
-
-    db.session.add(new_video)
-    db.session.commit()
-    flash('Video uploaded and processed successfully!', 'success')
-    return redirect(url_for('videos'))
-
-@app.route('/videos/delete/<int:video_id>', methods=['POST'])
-def delete_video(video_id):
-    video_to_delete = Video.query.get_or_404(video_id)
-
-    # Delete the video and thumbnail files
-    for file_path in [video_to_delete.file_path, video_to_delete.thumbnail_path]:
-        if file_path:
-            try:
-                full_path = os.path.join('static', file_path)
-                if os.path.exists(full_path):
-                    os.remove(full_path)
-            except Exception as e:
-                print(f"Error deleting file {file_path}: {e}")
-
-    db.session.delete(video_to_delete)
-    db.session.commit()
-    flash('Video deleted successfully.', 'success')
-    return redirect(url_for('videos'))
-
-@app.route('/videos/data/<int:video_id>')
-def get_video_data(video_id):
-    video = Video.query.get_or_404(video_id)
-    return {
-        'title': video.title,
-        'description': video.description,
-        'file_url': url_for('static', filename=video.file_path)
-    }
-
-# --- VIDEOS SECTION END ---
 
 # --- Run the Application ---
 if __name__ == "__main__":

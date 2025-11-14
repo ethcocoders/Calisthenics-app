@@ -1,62 +1,72 @@
 from app import app, db, UserProfile, Challenge, UserChallenge, Badge
 
 def seed_tournament_data():
-    """Seeds the Challenge/UserChallenge tables and now the Badge table."""
+    """Seeds all tables related to the tournament and gamification features."""
     with app.app_context():
-        # --- 1. Seed Master Challenges ---
-        if Challenge.query.filter_by(is_user_created=False).first() is not None:
-            print("Master challenges already seeded.")
-        else:
-            print("Seeding master challenges...")
-            initial_challenges = [
-                Challenge(title="Push-up Endurance", level_requirement=1, xp_reward=50, task_details="Complete 50 Push-ups", time_limit="10 minutes"),
-                Challenge(title="Core Strength Novice", level_requirement=5, xp_reward=100, task_details="Hold a 2-minute Plank", time_limit="2 minutes"),
-                Challenge(title="Pull-up Beginner", level_requirement=10, xp_reward=150, task_details="Complete 10 strict Pull-ups", time_limit="15 minutes"),
-                Challenge(title="Squat Power", level_requirement=15, xp_reward=200, task_details="Perform 100 Bodyweight Squats", time_limit="20 minutes"),
-                Challenge(title="Dip Master", level_requirement=20, xp_reward=250, task_details="Complete 30 Dips", time_limit="15 minutes"),
-                Challenge(title="Advanced Skill: Muscle-up", level_requirement=25, xp_reward=500, task_details="Perform 1 successful Muscle-up", time_limit=None),
-                Challenge(title="Elite Endurance", level_requirement=30, xp_reward=1000, task_details="Complete a 100-rep circuit", time_limit="30 minutes"),
-            ]
-            db.session.bulk_save_objects(initial_challenges)
-            db.session.commit()
-            print("Master challenges seeded successfully.")
-
-        # --- 2. Set Initial User Level & XP ---
-        user = UserProfile.query.first()
-        if user and user.level == 1 and user.experience_points == 0:
-            print("Setting initial user level and XP...")
-            user.level = 27
-            user.experience_points = 7250 
-            db.session.commit()
-            print("User level and XP set to match static design.")
-        
-        # --- 3. Seed Initial UserChallenge Statuses ---
-        if UserChallenge.query.first() is None:
-            print("Seeding initial user challenge statuses...")
-            user = UserProfile.query.first()
-            all_challenges = Challenge.query.filter_by(is_user_created=False).all()
-            if user and all_challenges:
-                user_challenges = [UserChallenge(user_id=user.id, challenge_id=c.id, status='locked') for c in all_challenges]
-                db.session.bulk_save_objects(user_challenges)
-                db.session.commit()
-                print("User challenges seeded successfully.")
-        
-        # --- 4. NEW: Seed Badges ---
+        # --- 1. Seed Badges ---
         if Badge.query.first() is not None:
             print("Badges already seeded.")
         else:
             print("Seeding badges...")
             initial_badges = [
-                Badge(name="Challenge Novice", description="Complete 5 Challenges", challenges_required=5),
-                Badge(name="Challenge Adept", description="Complete 10 Challenges", challenges_required=10),
-                Badge(name="Challenge Veteran", description="Complete 25 Challenges", challenges_required=25),
-                Badge(name="Elite Challenger", description="Complete 50 Challenges", challenges_required=50),
-                Badge(name="Super Grand Challenger", description="Complete 70 Challenges", challenges_required=70),
+                Badge(name="Bronze Challenge", description="Awarded for completing the Level 25 challenge.", icon="fa-award", color="#cd7f32"),
+                Badge(name="Silver Challenge", description="Awarded for completing the Level 40 challenge.", icon="fa-award", color="#c0c0c0"),
+                Badge(name="Golden Challenge", description="Awarded for completing the Level 55 challenge.", icon="fa-trophy", color="#ffd700"),
+                Badge(name="Super Challenge", description="Awarded for completing the Level 70 challenge.", icon="fa-star", color="#e91e63"),
+                Badge(name="Elite Challenge", description="Awarded for completing the Level 85 challenge.", icon="fa-shield-alt", color="#74b9ff"),
+                Badge(name="Grand Challenge", description="Awarded for completing the Level 100 challenge.", icon="fa-crown", color="#e67e22"),
+                Badge(name="Grand Master", description="Awarded for surpassing Level 100.", icon="fa-chess-king", color="#d63031"),
             ]
             db.session.bulk_save_objects(initial_badges)
             db.session.commit()
             print("Badges seeded successfully.")
 
+        # --- 2. Seed Milestone Challenges ---
+        if Challenge.query.filter_by(is_milestone_challenge=True).first() is not None:
+            print("Milestone challenges already seeded.")
+        else:
+            print("Seeding milestone challenges...")
+            bronze_badge = Badge.query.filter_by(name="Bronze Challenge").first()
+            silver_badge = Badge.query.filter_by(name="Silver Challenge").first()
+            golden_badge = Badge.query.filter_by(name="Golden Challenge").first()
+            super_badge = Badge.query.filter_by(name="Super Challenge").first()
+            elite_badge = Badge.query.filter_by(name="Elite Challenge").first()
+            grand_badge = Badge.query.filter_by(name="Grand Challenge").first()
+            master_badge = Badge.query.filter_by(name="Grand Master").first()
+
+            milestone_challenges = [
+                Challenge(title="The Bronze Trial", level_requirement=25, xp_reward=1000, task_details="Complete 10 Muscle-ups", is_milestone_challenge=True, awards_badge_id=bronze_badge.id),
+                Challenge(title="The Silver Gauntlet", level_requirement=40, xp_reward=2000, task_details="Hold a 30-second Front Lever", is_milestone_challenge=True, awards_badge_id=silver_badge.id),
+                Challenge(title="The Golden Standard", level_requirement=55, xp_reward=3000, task_details="Perform 5 Freestanding Handstand Push-ups", is_milestone_challenge=True, awards_badge_id=golden_badge.id),
+                Challenge(title="The Super Human Test", level_requirement=70, xp_reward=4000, task_details="Hold a 15-second Full Planche", is_milestone_challenge=True, awards_badge_id=super_badge.id),
+                Challenge(title="The Elite Proving Ground", level_requirement=85, xp_reward=5000, task_details="Perform 3 One-Arm Pull-ups (Each Arm)", is_milestone_challenge=True, awards_badge_id=elite_badge.id),
+                Challenge(title="The Grand Finale", level_requirement=100, xp_reward=10000, task_details="Complete a 10-minute non-stop freestyle routine", is_milestone_challenge=True, awards_badge_id=grand_badge.id),
+                Challenge(title="Beyond Grand Master", level_requirement=101, xp_reward=0, task_details="Surpass Level 100", is_milestone_challenge=True, awards_badge_id=master_badge.id),
+            ]
+            db.session.bulk_save_objects(milestone_challenges)
+            db.session.commit()
+            print("Milestone challenges seeded successfully.")
+
+        # --- 3. Seed UserChallenge links for system challenges ---
+        user = UserProfile.query.first()
+        if user:
+            system_challenges = Challenge.query.filter_by(is_user_created=False).all()
+            existing_links = {uc.challenge_id for uc in UserChallenge.query.filter_by(user_id=user.id).all()}
+            
+            new_links = []
+            for challenge in system_challenges:
+                if challenge.id not in existing_links:
+                    new_links.append(UserChallenge(user_id=user.id, challenge_id=challenge.id, status='locked'))
+            
+            if new_links:
+                print("Seeding new UserChallenge links...")
+                db.session.bulk_save_objects(new_links)
+                db.session.commit()
+                print(f"{len(new_links)} new user-challenge links created.")
+            else:
+                print("UserChallenge links are up to date.")
+        else:
+            print("User not found, cannot seed UserChallenge links.")
 
 if __name__ == '__main__':
     seed_tournament_data()

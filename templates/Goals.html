@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Goals</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"> <!-- Assuming you have a main CSS file -->
     <style>
         * {
             margin: 0;
@@ -230,7 +231,6 @@
             height: 100%;
             background: linear-gradient(90deg, var(--success), var(--primary));
             border-radius: 4px;
-            width: 76%;
         }
 
         .chart-info {
@@ -274,6 +274,8 @@
             justify-content: center;
             color: white;
             font-weight: bold;
+            background-size: cover;
+            background-position: center;
         }
 
         .gallery-info {
@@ -326,6 +328,15 @@
             border-left: 4px solid var(--success);
             opacity: 0.8;
         }
+        
+        .goal-item.in-progress {
+            border-left: 4px solid var(--primary);
+        }
+
+        .goal-item.pending {
+            border-left: 4px solid var(--accent);
+        }
+
 
         .goal-header {
             display: flex;
@@ -677,16 +688,16 @@
                 <h2><i class="fas fa-dumbbell"></i> <span>Calisthenics</span></h2>
             </div>
             <ul class="nav-links">
-                <li><a href="#" data-page="home"><i class="fas fa-home"></i> <span>Home</span></a></li>
-                <li><a href="#" data-page="workouts"><i class="fas fa-running"></i> <span>Workouts</span></a></li>
-                <li><a href="#" data-page="calendar"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
-                <li><a href="#" data-page="schedule"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
-                <li><a href="#" data-page="health"><i class="fas fa-heartbeat"></i> <span>Health</span></a></li>
-                <li><a href="#" data-page="plan"><i class="fas fa-tasks"></i> <span>Plan</span></a></li>
-                <li><a href="#" data-page="tournament"><i class="fas fa-trophy"></i> <span>Tournament</span></a></li>
-                <li><a href="#" class="active" data-page="goals"><i class="fas fa-bullseye"></i> <span>Goals</span></a></li>
-                <li><a href="#" data-page="motivation"><i class="fas fa-fire"></i> <span>Motivation</span></a></li>
-                <li><a href="#" data-page="videos"><i class="fas fa-video"></i> <span>Videos</span></a></li>
+                <li><a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'index' else '' }}"><i class="fas fa-home"></i> <span>Home</span></a></li>
+                <li><a href="{{ url_for('workouts') }}" class="{{ 'active' if active_page == 'workouts' else '' }}"><i class="fas fa-running"></i> <span>Workouts</span></a></li>
+                <li><a href="{{ url_for('calendar') }}" class="{{ 'active' if active_page == 'calendar' else '' }}"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a></li>
+                <li><a href="{{ url_for('schedule') }}" class="{{ 'active' if active_page == 'schedule' else '' }}"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+                <li><a href="{{ url_for('health') }}" class="{{ 'active' if active_page == 'health' else '' }}"><i class="fas fa-heartbeat"></i> <span>Health</span></a></li>
+                <li><a href="{{ url_for('plan') }}" class="{{ 'active' if active_page == 'plan' else '' }}"><i class="fas fa-tasks"></i> <span>Plan</span></a></li>
+                <li><a href="{{ url_for('tournament') }}" class="{{ 'active' if active_page == 'tournament' else '' }}"><i class="fas fa-trophy"></i> <span>Tournament</span></a></li>
+                <li><a href="{{ url_for('goals') }}" class="{{ 'active' if active_page == 'goals' else '' }}"><i class="fas fa-bullseye"></i> <span>Goals</span></a></li>
+                <li><a href="{{ url_for('motivation') }}" class="{{ 'active' if active_page == 'motivation' else '' }}"><i class="fas fa-fire"></i> <span>Motivation</span></a></li>
+                <li><a href="{{ url_for('videos') }}" class="{{ 'active' if active_page == 'videos' else '' }}"><i class="fas fa-video"></i> <span>Videos</span></a></li>
             </ul>
         </div>
 
@@ -710,12 +721,14 @@
                     <div class="progress-stats">
                         <div class="stat-card">
                             <div class="stat-label">Completed Goals</div>
-                            <div class="stat-value completed">8</div>
-                            <div class="stat-label">Out of 15</div>
+                            <!-- Jinja2 Dynamic Data -->
+                            <div class="stat-value completed">{{ completed_goals }}</div>
+                            <div class="stat-label">Out of {{ total_goals }}</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Total Goals</div>
-                            <div class="stat-value total">15</div>
+                             <!-- Jinja2 Dynamic Data -->
+                            <div class="stat-value total">{{ total_goals }}</div>
                             <div class="stat-label">Active Goals</div>
                         </div>
                     </div>
@@ -724,11 +737,13 @@
                     <div class="progress-chart">
                         <h3 class="chart-title">Overall Goal Completion</h3>
                         <div class="chart-bar">
-                            <div class="chart-fill"></div>
+                             <!-- Jinja2 Dynamic Data -->
+                            <div class="chart-fill" style="width: {{ completion_percentage }}%;"></div>
                         </div>
                         <div class="chart-info">
-                            <span>76% Completed</span>
-                            <span>8/15 goals</span>
+                             <!-- Jinja2 Dynamic Data -->
+                            <span>{{ completion_percentage }}% Completed</span>
+                            <span>{{ completed_goals }}/{{ total_goals }} goals</span>
                         </div>
                     </div>
 
@@ -737,22 +752,34 @@
                         <h3 class="gallery-title">Before & After Progress</h3>
                         <div class="gallery-grid">
                             <div class="gallery-item">
-                                <div class="gallery-image">
-                                    <span>Before: June 2025</span>
+                                <!-- Jinja2 Dynamic Data -->
+                                {% if before_photo %}
+                                <div class="gallery-image" style="background-image: url('{{ url_for('static', filename=before_photo.file_path) }}');">
+                                    <span>Before: {{ before_photo.goal.target_date.strftime('%B %Y') }}</span>
                                 </div>
                                 <div class="gallery-info">
-                                    <h4>Starting Point</h4>
-                                    <p>Beginner level, basic form</p>
+                                    <h4>{{ before_photo.goal.title }}</h4>
+                                    <p>Starting Point</p>
                                 </div>
+                                {% else %}
+                                <div class="gallery-image"><span>Before Photo Not Set</span></div>
+                                <div class="gallery-info"><h4>Starting Point</h4><p>Add a 'before' photo to a goal</p></div>
+                                {% endif %}
                             </div>
                             <div class="gallery-item">
-                                <div class="gallery-image" style="background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);">
-                                    <span>After: November 2025</span>
+                                <!-- Jinja2 Dynamic Data -->
+                                {% if after_photo %}
+                                <div class="gallery-image" style="background-image: url('{{ url_for('static', filename=after_photo.file_path) }}'); background-color: #f093fb;">
+                                    <span>After: {{ after_photo.goal.completed_date.strftime('%B %Y') if after_photo.goal.completed_date else 'Current' }}</span>
                                 </div>
                                 <div class="gallery-info">
-                                    <h4>Current Progress</h4>
-                                    <p>Intermediate level, improved strength</p>
+                                    <h4>{{ after_photo.goal.title }}</h4>
+                                    <p>Latest Progress</p>
                                 </div>
+                                {% else %}
+                                <div class="gallery-image" style="background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);"><span>After Photo Not Set</span></div>
+                                <div class="gallery-info"><h4>Current Progress</h4><p>Add an 'after' photo to a goal</p></div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -762,157 +789,75 @@
                 <div class="goals-list-card">
                     <h2 class="goals-title">Your Goals</h2>
                     
-                    <div class="goal-item completed">
+                    <!-- Jinja2 Dynamic Loop -->
+                    {% for goal in all_goals %}
+                    <div class="goal-item {{ goal.status.replace('_', '-') }}">
                         <div class="goal-header">
                             <div>
-                                <div class="goal-title">100 Push-ups in a Row</div>
-                                <div class="goal-status status-completed">Completed</div>
+                                <div class="goal-title">{{ goal.title }}</div>
+                                <div class="goal-status status-{{ goal.status.replace('_', '-') }}">{{ goal.status.replace('_', ' ').title() }}</div>
                             </div>
                         </div>
                         <div class="goal-description">
-                            Achieve 100 consecutive push-ups with proper form and full range of motion.
+                            {{ goal.description or 'No description provided.' }}
                         </div>
                         <div class="goal-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%;"></div>
+                                <div class="progress-fill" style="width: {{ (goal.current_progress / goal.target_progress * 100) if goal.target_progress > 0 else 0 }}%;"></div>
                             </div>
                             <div class="progress-text">
-                                <span>100/100 push-ups</span>
-                                <span>Completed: Nov 5, 2025</span>
+                                {% if goal.progress_unit != '%' %}
+                                <span>{{ goal.current_progress|int }}/{{ goal.target_progress|int }} {{ goal.progress_unit }}</span>
+                                {% else %}
+                                <span>{{ goal.current_progress|int }}% Progress</span>
+                                {% endif %}
+                                <span>
+                                    {% if goal.status == 'completed' and goal.completed_date %}
+                                    Completed: {{ goal.completed_date.strftime('%b %d, %Y') }}
+                                    {% else %}
+                                    Target: {{ goal.target_date.strftime('%b %d, %Y') }}
+                                    {% endif %}
+                                </span>
                             </div>
                         </div>
+
+                        {% set image_count = goal.media.filter_by(media_type='image').count() %}
+                        {% set video_count = goal.media.filter_by(media_type='video').count() %}
+
+                        {% if image_count > 0 or video_count > 0 %}
                         <div class="goal-media">
+                            {% if image_count > 0 %}
                             <div class="media-item">
                                 <i class="fas fa-image"></i>
-                                <span>2 photos</span>
+                                <span>{{ image_count }} photo{{ 's' if image_count > 1 else '' }}</span>
                             </div>
+                            {% endif %}
+                            {% if video_count > 0 %}
                             <div class="media-item">
                                 <i class="fas fa-video"></i>
-                                <span>1 video</span>
+                                <span>{{ video_count }} video{{ 's' if video_count > 1 else '' }}</span>
                             </div>
+                            {% endif %}
                         </div>
+                        {% endif %}
+
                         <div class="goal-actions">
-                            <button class="goal-action-btn complete">
-                                <i class="fas fa-undo"></i>
-                            </button>
-                            <button class="goal-action-btn delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <form action="{{ url_for('toggle_goal_status', goal_id=goal.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="goal-action-btn complete">
+                                    <i class="fas {% if goal.status == 'completed' %}fa-undo{% else %}fa-check{% endif %}"></i>
+                                </button>
+                            </form>
+                            <form action="{{ url_for('delete_goal', goal_id=goal.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this goal?');" style="display: inline;">
+                                <button type="submit" class="goal-action-btn delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
+                    {% else %}
+                    <p style="text-align: center; color: var(--text-secondary);">You have no goals yet. Click 'Add Goal' to create one!</p>
+                    {% endfor %}
                     
-                    <div class="goal-item">
-                        <div class="goal-header">
-                            <div>
-                                <div class="goal-title">First Muscle-up</div>
-                                <div class="goal-status status-in-progress">In Progress</div>
-                            </div>
-                        </div>
-                        <div class="goal-description">
-                            Perform your first clean muscle-up on the pull-up bar with controlled movement.
-                        </div>
-                        <div class="goal-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 65%;"></div>
-                            </div>
-                            <div class="progress-text">
-                                <span>65% Progress</span>
-                                <span>Target: Dec 15, 2025</span>
-                            </div>
-                        </div>
-                        <div class="goal-media">
-                            <div class="media-item">
-                                <i class="fas fa-image"></i>
-                                <span>3 photos</span>
-                            </div>
-                            <div class="media-item">
-                                <i class="fas fa-video"></i>
-                                <span>2 videos</span>
-                            </div>
-                        </div>
-                        <div class="goal-actions">
-                            <button class="goal-action-btn complete">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="goal-action-btn delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="goal-item">
-                        <div class="goal-header">
-                            <div>
-                                <div class="goal-title">Handstand Hold - 60 Seconds</div>
-                                <div class="goal-status status-in-progress">In Progress</div>
-                            </div>
-                        </div>
-                        <div class="goal-description">
-                            Hold a freestanding handstand for 60 seconds with good form and control.
-                        </div>
-                        <div class="goal-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 42%;"></div>
-                            </div>
-                            <div class="progress-text">
-                                <span>25/60 seconds</span>
-                                <span>Target: Jan 20, 2026</span>
-                            </div>
-                        </div>
-                        <div class="goal-media">
-                            <div class="media-item">
-                                <i class="fas fa-image"></i>
-                                <span>1 photo</span>
-                            </div>
-                            <div class="media-item">
-                                <i class="fas fa-video"></i>
-                                <span>4 videos</span>
-                            </div>
-                        </div>
-                        <div class="goal-actions">
-                            <button class="goal-action-btn complete">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="goal-action-btn delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="goal-item">
-                        <div class="goal-header">
-                            <div>
-                                <div class="goal-title">Planche Progression</div>
-                                <div class="goal-status status-pending">Not Started</div>
-                            </div>
-                        </div>
-                        <div class="goal-description">
-                            Begin planche progression training with tuck planche as the first milestone.
-                        </div>
-                        <div class="goal-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 0%;"></div>
-                            </div>
-                            <div class="progress-text">
-                                <span>0% Progress</span>
-                                <span>Target: Feb 1, 2026</span>
-                            </div>
-                        </div>
-                        <div class="goal-media">
-                            <div class="media-item">
-                                <i class="fas fa-plus"></i>
-                                <span>Add media</span>
-                            </div>
-                        </div>
-                        <div class="goal-actions">
-                            <button class="goal-action-btn complete">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="goal-action-btn delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -920,64 +865,65 @@
         <!-- Add Goal Modal -->
         <div class="add-goal-modal" id="addGoalModal">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Create New Goal</h3>
-                    <button class="close-modal" id="closeModal">&times;</button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="goalTitle">Goal Title</label>
-                    <input type="text" id="goalTitle" placeholder="Enter your goal title" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="goalDescription">Goal Description</label>
-                    <textarea id="goalDescription" placeholder="Describe your goal in detail"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="goalTargetDate">Target Date</label>
-                    <input type="date" id="goalTargetDate" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Upload Progress Media</label>
-                    <div class="file-upload" id="fileUploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Click to upload photos or videos</p>
-                        <p><small>Supported formats: JPG, PNG, MP4, MOV</small></p>
-                        <input type="file" id="mediaFiles" multiple accept="image/*,video/*">
+                <form action="{{ url_for('add_goal') }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Create New Goal</h3>
+                        <button type="button" class="close-modal" id="closeModal">&times;</button>
                     </div>
-                    <div class="uploaded-files" id="uploadedFilesContainer">
-                        <!-- Uploaded files will appear here -->
+                    
+                    <div class="form-group">
+                        <label for="goalTitle">Goal Title</label>
+                        <input type="text" id="goalTitle" name="title" placeholder="Enter your goal title" required>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="goalNotes">Notes & Progress Updates</label>
-                    <textarea id="goalNotes" placeholder="Add any notes about your goal or progress updates"></textarea>
-                </div>
-                
-                <div class="form-buttons">
-                    <button class="modal-btn cancel" id="cancelGoalBtn">Cancel</button>
-                    <button class="modal-btn save" id="saveGoalBtn">Create Goal</button>
-                </div>
+                    
+                    <div class="form-group">
+                        <label for="goalDescription">Goal Description</label>
+                        <textarea id="goalDescription" name="description" placeholder="Describe your goal in detail"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="goalTargetDate">Target Date</label>
+                        <input type="date" id="goalTargetDate" name="target_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Upload Progress Media</label>
+                        <div class="file-upload" id="fileUploadArea">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload photos or videos</p>
+                            <p><small>Supported formats: JPG, PNG, MP4, MOV</small></p>
+                            <input type="file" id="mediaFiles" name="media_files[]" multiple accept="image/*,video/*">
+                        </div>
+                        <div class="uploaded-files" id="uploadedFilesContainer">
+                            <!-- Uploaded files will appear here -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="goalNotes">Notes & Progress Updates</label>
+                        <textarea id="goalNotes" name="notes" placeholder="Add any notes about your goal or progress updates"></textarea>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="modal-btn cancel" id="cancelGoalBtn">Cancel</button>
+                        <button type="submit" class="modal-btn save">Create Goal</button>
+                    </div>
+                </form>
             </div>
         </div>
 
         <script>
-            // Goals functionality
             document.addEventListener('DOMContentLoaded', function() {
                 const addGoalBtn = document.getElementById('addGoalBtn');
                 const addGoalModal = document.getElementById('addGoalModal');
                 const closeModalBtn = document.getElementById('closeModal');
                 const cancelGoalBtn = document.getElementById('cancelGoalBtn');
-                const saveGoalBtn = document.getElementById('saveGoalBtn');
+                
                 const fileUploadArea = document.getElementById('fileUploadArea');
                 const mediaFilesInput = document.getElementById('mediaFiles');
                 const uploadedFilesContainer = document.getElementById('uploadedFilesContainer');
                 
-                // Set target date to 30 days from now
+                // Set default target date to 30 days from now
                 const today = new Date();
                 const targetDate = new Date(today);
                 targetDate.setDate(today.getDate() + 30);
@@ -991,115 +937,42 @@
                 // Close modal functions
                 function closeModal() {
                     addGoalModal.style.display = 'none';
-                    // Reset form
-                    document.getElementById('goalTitle').value = '';
-                    document.getElementById('goalDescription').value = '';
-                    document.getElementById('goalNotes').value = '';
+                    // Reset form fields
+                    const form = addGoalModal.querySelector('form');
+                    form.reset();
                     uploadedFilesContainer.innerHTML = '';
                 }
                 
                 closeModalBtn.addEventListener('click', closeModal);
                 cancelGoalBtn.addEventListener('click', closeModal);
                 
-                // Close modal when clicking outside
                 addGoalModal.addEventListener('click', function(e) {
                     if (e.target === addGoalModal) {
                         closeModal();
                     }
                 });
                 
-                // File upload functionality
-                fileUploadArea.addEventListener('click', function(e) {
-                    if (e.target !== mediaFilesInput) {
-                        mediaFilesInput.click();
-                    }
-                });
+                // File upload UI functionality
+                fileUploadArea.addEventListener('click', () => mediaFilesInput.click());
                 
                 mediaFilesInput.addEventListener('change', function() {
+                    uploadedFilesContainer.innerHTML = ''; // Clear previous previews
                     const files = Array.from(this.files);
                     files.forEach(file => {
                         const fileItem = document.createElement('div');
                         fileItem.className = 'uploaded-file';
                         fileItem.innerHTML = `
                             ${file.type.startsWith('image') ? '<i class="fas fa-image"></i>' : '<i class="fas fa-video"></i>'}
-                            <span>${file.name}</span>
-                            <i class="fas fa-times remove-file" data-filename="${file.name}"></i>
+                            <span>${file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name}</span>
                         `;
                         uploadedFilesContainer.appendChild(fileItem);
                     });
-                    
-                    // Add event listeners to remove buttons
-                    document.querySelectorAll('.remove-file').forEach(btn => {
-                        btn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            const filename = this.getAttribute('data-filename');
-                            const fileItem = this.closest('.uploaded-file');
-                            fileItem.remove();
-                        });
-                    });
                 });
                 
-                // Save goal
-                saveGoalBtn.addEventListener('click', function() {
-                    const title = document.getElementById('goalTitle').value.trim();
-                    const description = document.getElementById('goalDescription').value.trim();
-                    const targetDate = document.getElementById('goalTargetDate').value;
-                    const notes = document.getElementById('goalNotes').value.trim();
-                    
-                    if (!title || !targetDate) {
-                        alert('Please fill in required fields!');
-                        return;
-                    }
-                    
-                    // In a real app, this would save to database
-                    const uploadedFiles = document.querySelectorAll('.uploaded-file').length;
-                    alert(`Goal created successfully!\nTitle: ${title}\nTarget Date: ${targetDate}\n${uploadedFiles} files uploaded`);
-                    closeModal();
-                });
-                
-                // Goal action functionality
-                document.querySelectorAll('.goal-action-btn.complete').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const goalItem = this.closest('.goal-item');
-                        goalItem.classList.toggle('completed');
-                        const icon = this.querySelector('i');
-                        const status = goalItem.querySelector('.goal-status');
-                        
-                        if (goalItem.classList.contains('completed')) {
-                            icon.className = 'fas fa-undo';
-                            status.textContent = 'Completed';
-                            status.className = 'goal-status status-completed';
-                        } else {
-                            icon.className = 'fas fa-check';
-                            status.textContent = 'In Progress';
-                            status.className = 'goal-status status-in-progress';
-                        }
-                    });
-                });
-                
-                document.querySelectorAll('.goal-action-btn.delete').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const goalItem = this.closest('.goal-item');
-                        if (confirm('Are you sure you want to delete this goal?')) {
-                            goalItem.style.opacity = '0';
-                            goalItem.style.transform = 'translateX(-20px)';
-                            setTimeout(() => {
-                                goalItem.remove();
-                            }, 300);
-                        }
-                    });
-                });
-                
-                // Gallery item click functionality
-                document.querySelectorAll('.gallery-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const title = this.querySelector('h4').textContent;
-                        const description = this.querySelector('p').textContent;
-                        alert(`Gallery Item:\n\n${title}\n${description}`);
-                    });
-                });
+                // NOTE: All goal action logic (complete, delete, save) is now handled
+                // by form submissions to the Flask backend. The client-side JS for
+                // these actions has been removed to rely on the backend as the single source of truth.
             });
         </script>
 </body>
 </html>
-
