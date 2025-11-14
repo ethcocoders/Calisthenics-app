@@ -7,6 +7,7 @@ from sqlalchemy import func
 from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 import uuid
+from moviepy.editor import VideoFileClip
 
 # Get the base directory of the project
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -19,34 +20,64 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a-very-secret-key-that-should-be-changed'
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'calisthenics.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'goals')
+	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+	app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'goals')
 
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+	if not os.path.exists(app.config['UPLOAD_FOLDER']):
+	    os.makedirs(app.config['UPLOAD_FOLDER'])
 
-app.config['MOTIVATION_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'motivation')
+	app.config['MOTIVATION_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'motivation')
 
-# --- Make sure the motivation upload folder exists ---
-if not os.path.exists(app.config['MOTIVATION_UPLOAD_FOLDER']):
-    os.makedirs(app.config['MOTIVATION_UPLOAD_FOLDER'])
+	# --- Make sure the motivation upload folder exists ---
+	if not os.path.exists(app.config['MOTIVATION_UPLOAD_FOLDER']):
+	    os.makedirs(app.config['MOTIVATION_UPLOAD_FOLDER'])
 
-app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'videos')
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB limit
+	app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'videos')
+	app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB limit
 
-# --- Make sure the video upload folder exists ---
-if not os.path.exists(app.config['VIDEO_UPLOAD_FOLDER']):
-    os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'])
+	# --- Make sure the video upload folder exists ---
+	if not os.path.exists(app.config['VIDEO_UPLOAD_FOLDER']):
+	    os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'])
+
+	# --- ADD THIS CODE TO app.py ---
+
+	# --- Add this configuration line with the other app.config settings ---
+	app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'videos')
+	app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB limit
+
+	# --- Make sure the video upload folder exists ---
+	if not os.path.exists(app.config['VIDEO_UPLOAD_FOLDER']):
+	    os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'])
 
 
-# --- Initialize Extensions ---
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+	# --- Helper function to format seconds into MM:SS or HH:MM:SS ---
+	def format_duration(seconds):
+	    seconds = int(seconds)
+	    hours = seconds // 3600
+	    minutes = (seconds % 3600) // 60
+	    seconds = seconds % 60
+	    if hours > 0:
+	        return f"{hours:02}:{minutes:02}:{seconds:02}"
+	    else:
+	        return f"{minutes:02}:{seconds:02}"
 
-# ---  UserProfile MODEL ---
+	# --- Add this configuration line for thumbnails ---
+	app.config['THUMBNAIL_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'thumbnails')
 
-class UserProfile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+	# --- Make sure the thumbnail upload folder exists ---
+	if not os.path.exists(app.config['THUMBNAIL_UPLOAD_FOLDER']):
+	    os.makedirs(app.config['THUMBNAIL_UPLOAD_FOLDER'])
+
+
+
+	# --- Initialize Extensions ---
+	db = SQLAlchemy(app)
+	migrate = Migrate(app, db)
+
+	# ---  UserProfile MODEL ---
+
+	class UserProfile(db.Model):
+	    id = db.Column(db.Integer, primary_key=True)
     height = db.Column(db.Float, nullable=True) # in cm
     age = db.Column(db.Integer, nullable=True)
     gender = db.Column(db.String(50), nullable=True)
@@ -1327,40 +1358,6 @@ def toggle_motivation_favorite(item_id):
     return redirect(request.referrer or url_for('motivation'))
 
 # --- MOTIVATION SECTION END ---
-
-# --- ADD THIS CODE TO app.py ---
-
-# --- Add this configuration line with the other app.config settings ---
-app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'videos')
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB limit
-
-# --- Make sure the video upload folder exists ---
-if not os.path.exists(app.config['VIDEO_UPLOAD_FOLDER']):
-    os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'])
-
-# --- REPLACE THE ENTIRE 'VIDEOS SECTION START' to 'VIDEOS SECTION END' BLOCK ---
-
-# --- Add these new imports at the top of your app.py ---
-from moviepy.editor import VideoFileClip
-
-# --- Helper function to format seconds into MM:SS or HH:MM:SS ---
-def format_duration(seconds):
-    seconds = int(seconds)
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    if hours > 0:
-        return f"{hours:02}:{minutes:02}:{seconds:02}"
-    else:
-        return f"{minutes:02}:{seconds:02}"
-
-# --- Add this configuration line for thumbnails ---
-app.config['THUMBNAIL_UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads', 'thumbnails')
-
-# --- Make sure the thumbnail upload folder exists ---
-if not os.path.exists(app.config['THUMBNAIL_UPLOAD_FOLDER']):
-    os.makedirs(app.config['THUMBNAIL_UPLOAD_FOLDER'])
-
 
 # --- VIDEOS SECTION START ---
 
